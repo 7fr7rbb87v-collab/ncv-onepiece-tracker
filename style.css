@@ -11,19 +11,10 @@ header {
   border-bottom: 1px solid #2a2f3a;
 }
 
-header h1 {
-  margin: 0 0 8px;
-}
+header h1 { margin: 0 0 8px; }
+header p { margin: 0; color: #b9c0cc; }
 
-header p {
-  margin: 0;
-  color: #b9c0cc;
-}
-
-.filters {
-  padding: 18px 28px;
-}
-
+.filters { padding: 18px 28px; }
 .filters button {
   margin-right: 8px;
   padding: 10px 14px;
@@ -33,39 +24,26 @@ header p {
   font-weight: bold;
 }
 
-main {
-  padding: 0 28px 40px;
-}
-
+main { padding: 0 28px 40px; }
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 18px;
 }
-
 .card {
   background: #171a21;
   border: 1px solid #2a2f3a;
   border-radius: 14px;
   overflow: hidden;
 }
-
 .card img {
   width: 100%;
   height: 230px;
   object-fit: cover;
   background: #222;
 }
-
-.cardBody {
-  padding: 14px;
-}
-
-.card h3 {
-  font-size: 15px;
-  margin: 0 0 10px;
-}
-
+.cardBody { padding: 14px; }
+.card h3 { font-size: 15px; margin: 0 0 10px; }
 .badge {
   display: inline-block;
   padding: 4px 8px;
@@ -74,20 +52,9 @@ main {
   font-size: 12px;
   margin-bottom: 10px;
 }
-
-.price {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 8px 0;
-}
-
-.profit {
-  color: #70e000;
-  font-weight: bold;
-}
-
-.card a,
-.card button {
+.price { font-size: 22px; font-weight: bold; margin: 8px 0; }
+.profit { color: #70e000; font-weight: bold; }
+.card a, .card button {
   display: block;
   width: 100%;
   text-align: center;
@@ -100,17 +67,8 @@ main {
   box-sizing: border-box;
   font-weight: bold;
 }
-
-.card a {
-  background: #ffffff;
-  color: #000000;
-}
-
-.card button {
-  background: #303744;
-  color: #ffffff;
-}
-
+.card a { background: #ffffff; color: #000000; }
+.card button { background: #303744; color: #ffffff; }
 .chartBox {
   margin-top: 32px;
   padding: 20px;

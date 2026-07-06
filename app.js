@@ -18,6 +18,15 @@ async function loadData() {
   }
 }
 
+function escapeText(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function renderDeals(deals) {
   const grid = document.getElementById("dealsGrid");
   grid.innerHTML = "";
@@ -31,21 +40,30 @@ function renderDeals(deals) {
     const card = document.createElement("div");
     card.className = "card";
 
+    const safeTitle = escapeText(deal.title);
+    const safeKeyword = escapeText(deal.keyword);
+
     card.innerHTML = `
-      <img src="${deal.image || 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${deal.title}">
+      <img src="${deal.image || 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${safeTitle}">
       <div class="cardBody">
-        <span class="badge">${deal.source} · ${deal.type}</span>
-        <h3>${deal.title}</h3>
+        <span class="badge">${escapeText(deal.source)} · ${escapeText(deal.type)}</span>
+        <h3>${safeTitle}</h3>
         <div class="price">$${deal.price}</div>
         <div>Buy Target: $${deal.max_buy_price}</div>
         <div>Resale Target: $${deal.target_resale_price}</div>
         <div class="profit">Est. Profit: $${deal.estimated_profit}</div>
-        <button onclick="showChart('${deal.product_id}', '${deal.keyword.replace(/'/g, "\\'")}')">View Chart</button>
-        <a href="${deal.url}" target="_blank">Open Deal</a>
+        <button data-product-id="${escapeText(deal.product_id)}" data-keyword="${safeKeyword}" class="chartBtn">View Chart</button>
+        <a href="${deal.url}" target="_blank" rel="noopener noreferrer">Open Deal</a>
       </div>
     `;
 
     grid.appendChild(card);
+  });
+
+  document.querySelectorAll(".chartBtn").forEach(button => {
+    button.addEventListener("click", () => {
+      showChart(button.dataset.productId, button.dataset.keyword);
+    });
   });
 }
 
@@ -65,7 +83,7 @@ function showChart(productId, keyword) {
   document.getElementById("chartTitle").innerText = `${keyword} Price History`;
 
   if (!chartData.length) {
-    alert("No history data yet. Run the workflow a few times to build history.");
+    alert("No history data yet. Run the workflow to build history.");
     return;
   }
 
@@ -84,19 +102,11 @@ function showChart(productId, keyword) {
     data: {
       labels: labels,
       datasets: [
-        {
-          label: "Lowest Price",
-          data: lowestPrices
-        },
-        {
-          label: "Average Price",
-          data: averagePrices
-        }
+        { label: "Lowest Price", data: lowestPrices },
+        { label: "Average Price", data: averagePrices }
       ]
     },
-    options: {
-      responsive: true
-    }
+    options: { responsive: true }
   });
 }
 
