@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 DATA_DIR = "data"
 DEALS_FILE = os.path.join(DATA_DIR, "deals.json")
 HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
+SALES_HISTORY_FILE = os.path.join(DATA_DIR, "sales_history.json")
 
 def safe_float(value, default=0):
     try:
