@@ -2,40 +2,33 @@
 <html>
 <head>
   <title>NCV One Piece Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>NCV One Piece Deal Tracker</h1>
-  <p>Live deal board for One Piece cards and sealed product.</p>
+  <header>
+    <h1>NCV One Piece Tracker</h1>
+    <p>Live board for One Piece singles, sealed product, images, links, and price history.</p>
+  </header>
 
-  <table border="1" cellpadding="8">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Price</th>
-        <th>Link</th>
-      </tr>
-    </thead>
-    <tbody id="deals"></tbody>
-  </table>
+  <section class="filters">
+    <button onclick="filterDeals('all')">All</button>
+    <button onclick="filterDeals('single')">Singles</button>
+    <button onclick="filterDeals('sealed')">Sealed</button>
+  </section>
 
-  <script>
-    fetch("deals_found.csv")
-      .then(response => response.text())
-      .then(data => {
-        const rows = data.trim().split("\n").slice(1);
-        const table = document.getElementById("deals");
+  <main>
+    <section id="dealsGrid" class="grid"></section>
 
-        rows.forEach(row => {
-          const cols = row.split(",");
-          table.innerHTML += `
-            <tr>
-              <td>${cols[0]}</td>
-              <td>$${cols[1]}</td>
-              <td><a href="${cols[2]}" target="_blank">Open Deal</a></td>
-            </tr>
-          `;
-        });
-      });
-  </script>
+    <section class="chartBox">
+      <h2 id="chartTitle">Price History</h2>
+      <canvas id="priceChart"></canvas>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
