@@ -2,10 +2,20 @@ let allDeals = [];
 let allHistory = [];
 let priceChart = null;
 
+function money(value) {
+  const number = Number(value || 0);
+  return number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function escapeForButton(value) {
+  return String(value || "").replace(/'/g, "\\'");
+}
+
 async function loadData() {
   try {
-    const dealsResponse = await fetch("data/deals.json?v=" + Date.now());
-    const historyResponse = await fetch("data/history.json?v=" + Date.now());
+    const cacheBust = Date.now();
+    const dealsResponse = await fetch("data/deals.json?v=" + cacheBust);
+    const historyResponse = await fetch("data/history.json?v=" + cacheBust);
 
     allDeals = await dealsResponse.json();
     allHistory = await historyResponse.json();
@@ -13,13 +23,9 @@ async function loadData() {
     renderDeals(allDeals);
   } catch (error) {
     console.error(error);
-    const grid = document.getElementById("dealsGrid");
-    grid.innerHTML = "<p>Data could not load. Check data/deals.json.</p>";
+    document.getElementById("dealsGrid").innerHTML =
+      "<p>Data could not load. Check data/deals.json and run the GitHub Action.</p>";
   }
-}
-
-function escapeForOnClick(text) {
-  return String(text || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 function renderDeals(deals) {
@@ -27,7 +33,7 @@ function renderDeals(deals) {
   grid.innerHTML = "";
 
   if (!deals || deals.length === 0) {
-    grid.innerHTML = "<p>No deals found yet. Check manual_listings.csv and run the workflow.</p>";
+    grid.innerHTML = "<p>No listings found yet. Add listings to manual_listings.csv and run the workflow.</p>";
     return;
   }
 
@@ -35,20 +41,20 @@ function renderDeals(deals) {
     const card = document.createElement("div");
     card.className = "card";
 
-    const image = deal.image || "https://via.placeholder.com/300x400?text=No+Image";
-    const safeKeyword = escapeForOnClick(deal.keyword);
+    const safeKeyword = escapeForButton(deal.keyword);
+    const safeProductId = escapeForButton(deal.product_id);
 
     card.innerHTML = `
-      <img src="${image}" alt="${deal.title || "Product image"}">
+      <img src="${deal.image || 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${deal.title}">
       <div class="cardBody">
-        <span class="badge">${deal.source || "Manual"} · ${deal.type || "item"}</span>
-        <h3>${deal.title || deal.keyword || "Untitled"}</h3>
-        <div class="price">$${Number(deal.price || 0).toFixed(2)}</div>
-        <div>Buy Target: $${Number(deal.max_buy_price || 0).toFixed(2)}</div>
-        <div>Resale Target: $${Number(deal.target_resale_price || 0).toFixed(2)}</div>
-        <div class="profit">Est. Profit: $${Number(deal.estimated_profit || 0).toFixed(2)}</div>
-        <button onclick="showChart('${deal.product_id}', '${safeKeyword}')">View Chart</button>
-        <a href="${deal.url || '#'}" target="_blank" rel="noopener">Open Deal</a>
+        <span class="badge">${deal.source || 'Manual'} · ${deal.type || 'item'}</span>
+        <h3>${deal.title}</h3>
+        <div class="price">Listed: $${money(deal.price)}</div>
+        <div class="target">Buy Target -20%: $${money(deal.buy_target)}</div>
+        <div class="target">Sale Target +35%: $${money(deal.sale_target)}</div>
+        <div class="profit">Target Spread: $${money(deal.estimated_spread)}</div>
+        <button onclick="showChart('${safeProductId}', '${safeKeyword}')">View Chart</button>
+        <a href="${deal.url}" target="_blank">Open Listing</a>
       </div>
     `;
 
@@ -77,8 +83,9 @@ function showChart(productId, keyword) {
   }
 
   const labels = chartData.map(item => item.timestamp);
-  const lowestPrices = chartData.map(item => item.lowest_price);
-  const averagePrices = chartData.map(item => item.average_price);
+  const listedPrices = chartData.map(item => item.lowest_price);
+  const buyTargets = chartData.map(item => item.buy_target);
+  const saleTargets = chartData.map(item => item.sale_target);
 
   const ctx = document.getElementById("priceChart");
 
@@ -91,19 +98,22 @@ function showChart(productId, keyword) {
     data: {
       labels: labels,
       datasets: [
-        {
-          label: "Lowest Price",
-          data: lowestPrices
-        },
-        {
-          label: "Average Price",
-          data: averagePrices
-        }
+        { label: "Listed Price", data: listedPrices },
+        { label: "Buy Target -20%", data: buyTargets },
+        { label: "Sale Target +35%", data: saleTargets }
       ]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: $${money(context.raw)}`;
+            }
+          }
+        }
+      }
     }
   });
 }
