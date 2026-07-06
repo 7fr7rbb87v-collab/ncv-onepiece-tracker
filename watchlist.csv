@@ -1,6 +1,6 @@
-keyword,max_buy_price,target_resale_price,type
-"One Piece Luffy C01 Carddass",300,500,single
-"One Piece OP-05 Booster Box",130,180,sealed
-"One Piece OP-09 Booster Box",100,150,sealed
-"One Piece ST-10 Starter Deck",25,45,sealed
-"One Piece Premium Bandai Card Collection",40,80,sealed
+product_id,keyword,max_buy_price,target_resale_price,type
+luffy-c01,"One Piece Luffy C01 Carddass",300,500,single
+op05-box,"One Piece OP-05 Booster Box",130,180,sealed
+op09-box,"One Piece OP-09 Booster Box",100,150,sealed
+st10-deck,"One Piece ST-10 Starter Deck",25,45,sealed
+pbandai-collection,"One Piece Premium Bandai Card Collection",40,80,sealed
