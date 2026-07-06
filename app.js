@@ -1,14 +1,17 @@
 let allDeals = [];
 let allHistory = [];
 let priceChart = null;
+let allSales = [];
 
 async function loadData() {
-  const dealsResponse = await fetch("data/deals.json");
-  const historyResponse = await fetch("data/history.json");
+  const dealsResponse = await fetch("data/deals.json?v=" + Date.now());
+const historyResponse = await fetch("data/history.json?v=" + Date.now());
+const salesResponse = await fetch("data/sales_history.json?v=" + Date.now());
 
-  allDeals = await dealsResponse.json();
-  allHistory = await historyResponse.json();
-
+allDeals = await dealsResponse.json();
+allHistory = await historyResponse.json();
+allSales = await salesResponse.json();
+  
   renderDeals(allDeals);
 }
 
