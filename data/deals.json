@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "product_id": "pbandai-29th",
+    "keyword": "ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",
+    "title": "ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",
+    "price": 10.0,
+    "max_buy_price": 30.0,
+    "target_resale_price": 60.0,
+    "estimated_profit": 50.0,
+    "url": "https://p-bandai.com/us/item/N2903432001",
+    "image": "https://p-bandai.com/files/seller-products/NSP0464751001/NHe1BsF5kl5qY0wcDHkc.jpg?w=1440&h=1440",
+    "source": "Bandai Manual",
+    "type": "sealed",
+    "last_checked": "2026-07-06 05:43:24 UTC"
+  },
+  {
+    "product_id": "zoro-op05-067",
+    "keyword": "Zoro-Juurou (SP) OP05-067",
+    "title": "Zoro-Juurou (SP) OP05-067 Emperors in the New World Foil - Fire 10+",
+    "price": 660.0,
+    "max_buy_price": 700.0,
+    "target_resale_price": 900.0,
+    "estimated_profit": 240.0,
+    "url": "https://www.ebay.com/itm/168516274938?_trkparms=amclksrc%3DITM%26aid%3D777008%26algo%3DPERSONAL.TOPIC%26ao%3D1%26asc%3D20250417133020%26meid%3Da5562758849d4326a7a12d8ab2b49835%26pid%3D102726%26rk%3D1%26rkt%3D1%26itm%3D168516274938%26pmt%3D0%26noa%3D1%26pg%3D4375194%26algv%3DRecentlyViewedItemsV2DWebWithPSItemDRV2_BP&_trksid=p4375194.c102726.m162918",
+    "image": "https://i.ebayimg.com/images/g/S8YAAeSwzMlqSr0f/s-l1600.jpg",
+    "source": "eBay Manual",
+    "type": "single",
+    "last_checked": "2026-07-06 05:43:24 UTC"
+  }
+]
