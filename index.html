@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NCV One Piece Tracker</title>
+</head>
+<body>
+  <h1>NCV One Piece Deal Tracker</h1>
+  <p>Live deal board for One Piece cards and sealed product.</p>
+
+  <table border="1" cellpadding="8">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody id="deals"></tbody>
+  </table>
+
+  <script>
+    fetch("deals_found.csv")
+      .then(response => response.text())
+      .then(data => {
+        const rows = data.trim().split("\n").slice(1);
+        const table = document.getElementById("deals");
+
+        rows.forEach(row => {
+          const cols = row.split(",");
+          table.innerHTML += `
+            <tr>
+              <td>${cols[0]}</td>
+              <td>$${cols[1]}</td>
+              <td><a href="${cols[2]}" target="_blank">Open Deal</a></td>
+            </tr>
+          `;
+        });
+      });
+  </script>
+</body>
+</html>
