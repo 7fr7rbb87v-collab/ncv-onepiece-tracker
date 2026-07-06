@@ -92,4 +92,39 @@ function showChart(productId, keyword) {
   });
 }
 
+function showSalesChart(productId, keyword) {
+  const salesData = allSales.filter(item => item.product_id === productId);
+
+  document.getElementById("chartTitle").innerText = `${keyword} Sold Sales History`;
+
+  if (!salesData.length) {
+    alert("No sold sales data yet for this product.");
+    return;
+  }
+
+  const labels = salesData.map(item => item.sold_date);
+  const soldPrices = salesData.map(item => item.sold_price);
+
+  const ctx = document.getElementById("priceChart");
+
+  if (priceChart) {
+    priceChart.destroy();
+  }
+
+  priceChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Sold Price",
+          data: soldPrices
+        }
+      ]
+    },
+    options: {
+      responsive: true
+    }
+  });
+}
 loadData();
