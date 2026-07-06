@@ -93,12 +93,34 @@ def main():
                 "average_price": round(sum(prices) / len(prices), 2),
                 "listing_count": len(prices)
             })
+            def build_sales_history():
+    if not os.path.exists("sold_sales.csv"):
+        return []
+
+    sales = pd.read_csv("sold_sales.csv")
+    sales_history = []
+
+    for _, sale in sales.iterrows():
+        sales_history.append({
+            "product_id": str(sale["product_id"]),
+            "title": str(sale["title"]),
+            "sold_price": safe_float(sale["sold_price"]),
+            "sold_date": str(sale["sold_date"]),
+            "url": str(sale["url"]),
+            "source": str(sale["source"])
+        })
+
+    return sales_history
 
     save_json(DEALS_FILE, deals)
     save_json(HISTORY_FILE, history)
+    sales_history = build_sales_history()
+save_json(SALES_HISTORY_FILE, sales_history)
 
     print(f"Saved {len(deals)} deals.")
     print(f"Updated history with {len(watchlist)} tracked products.")
+
+
 
 if __name__ == "__main__":
     main()
