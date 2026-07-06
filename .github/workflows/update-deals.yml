@@ -22,6 +22,9 @@ jobs:
       - run: pip install -r requirements.txt
 
       - run: python tracker.py
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
 
       - run: |
           git config user.name "github-actions"
