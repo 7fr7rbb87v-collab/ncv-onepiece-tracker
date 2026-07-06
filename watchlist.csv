@@ -1,11 +1,6 @@
-category,keyword,max_buy_price,target_resale_price,min_profit,notes
-card,"1999 One Piece Carddass Hyper Battle Luffy C01",300,500,100,"grail single"
-card,"One Piece Carddass Luffy C01",250,450,100,"alternate keyword"
-card,"2008 Jump Festa Luffy promo",150,300,75,"promo"
-card,"Natsukomi 2019 Luffy clear card",80,180,50,"promo/clear card"
-sealed,"One Piece OP-05 booster box",180,240,35,"sealed booster box"
-sealed,"One Piece OP-09 booster box",120,170,25,"sealed booster box"
-sealed,"One Piece Wings of the Captain booster box",130,190,35,"sealed booster box"
-sealed,"One Piece Premium Booster PRB-01 box",95,145,25,"sealed product"
-sealed,"One Piece starter deck sealed",20,45,15,"sealed starter decks/lots"
-sealed,"One Piece Gift Collection sealed",35,70,20,"sealed collection"
+keyword,max_buy_price,target_resale_price,type
+"One Piece Luffy C01 Carddass",300,500,single
+"One Piece OP-05 Booster Box",130,180,sealed
+"One Piece OP-09 Booster Box",100,150,sealed
+"One Piece ST-10 Starter Deck",25,45,sealed
+"One Piece Premium Bandai Card Collection",40,80,sealed
