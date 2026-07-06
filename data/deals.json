@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "product_id": "luffy-c01",
+    "keyword": "One Piece Luffy C01 Carddass",
+    "title": "1999 One Piece Luffy C01 Carddass",
+    "price": 250.0,
+    "max_buy_price": 300.0,
+    "target_resale_price": 500.0,
+    "estimated_profit": 250.0,
+    "url": "https://example.com/deal-2",
+    "image": "https://via.placeholder.com/300x400?text=Luffy+C01",
+    "source": "Manual",
+    "type": "single",
+    "last_checked": "2026-07-06 04:36:33 UTC"
+  },
+  {
+    "product_id": "op05-box",
+    "keyword": "One Piece OP-05 Booster Box",
+    "title": "One Piece OP-05 Booster Box",
+    "price": 120.0,
+    "max_buy_price": 130.0,
+    "target_resale_price": 180.0,
+    "estimated_profit": 60.0,
+    "url": "https://example.com/deal-1",
+    "image": "https://via.placeholder.com/300x400?text=OP-05+Box",
+    "source": "Manual",
+    "type": "sealed",
+    "last_checked": "2026-07-06 04:36:33 UTC"
+  },
+  {
+    "product_id": "st10-deck",
+    "keyword": "One Piece ST-10 Starter Deck",
+    "title": "One Piece ST-10 Starter Deck",
+    "price": 22.0,
+    "max_buy_price": 25.0,
+    "target_resale_price": 45.0,
+    "estimated_profit": 23.0,
+    "url": "https://example.com/deal-3",
+    "image": "https://via.placeholder.com/300x400?text=ST-10",
+    "source": "Manual",
+    "type": "sealed",
+    "last_checked": "2026-07-06 04:36:33 UTC"
+  }
+]
