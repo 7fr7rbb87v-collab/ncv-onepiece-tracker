@@ -13,18 +13,13 @@ async function loadData() {
     renderDeals(allDeals);
   } catch (error) {
     console.error(error);
-    document.getElementById("dealsGrid").innerHTML =
-      "<p>Data could not load. Check data/deals.json.</p>";
+    const grid = document.getElementById("dealsGrid");
+    grid.innerHTML = "<p>Data could not load. Check data/deals.json.</p>";
   }
 }
 
-function escapeText(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function escapeForOnClick(text) {
+  return String(text || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 function renderDeals(deals) {
@@ -40,30 +35,24 @@ function renderDeals(deals) {
     const card = document.createElement("div");
     card.className = "card";
 
-    const safeTitle = escapeText(deal.title);
-    const safeKeyword = escapeText(deal.keyword);
+    const image = deal.image || "https://via.placeholder.com/300x400?text=No+Image";
+    const safeKeyword = escapeForOnClick(deal.keyword);
 
     card.innerHTML = `
-      <img src="${deal.image || 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${safeTitle}">
+      <img src="${image}" alt="${deal.title || "Product image"}">
       <div class="cardBody">
-        <span class="badge">${escapeText(deal.source)} · ${escapeText(deal.type)}</span>
-        <h3>${safeTitle}</h3>
-        <div class="price">$${deal.price}</div>
-        <div>Buy Target: $${deal.max_buy_price}</div>
-        <div>Resale Target: $${deal.target_resale_price}</div>
-        <div class="profit">Est. Profit: $${deal.estimated_profit}</div>
-        <button data-product-id="${escapeText(deal.product_id)}" data-keyword="${safeKeyword}" class="chartBtn">View Chart</button>
-        <a href="${deal.url}" target="_blank" rel="noopener noreferrer">Open Deal</a>
+        <span class="badge">${deal.source || "Manual"} · ${deal.type || "item"}</span>
+        <h3>${deal.title || deal.keyword || "Untitled"}</h3>
+        <div class="price">$${Number(deal.price || 0).toFixed(2)}</div>
+        <div>Buy Target: $${Number(deal.max_buy_price || 0).toFixed(2)}</div>
+        <div>Resale Target: $${Number(deal.target_resale_price || 0).toFixed(2)}</div>
+        <div class="profit">Est. Profit: $${Number(deal.estimated_profit || 0).toFixed(2)}</div>
+        <button onclick="showChart('${deal.product_id}', '${safeKeyword}')">View Chart</button>
+        <a href="${deal.url || '#'}" target="_blank" rel="noopener">Open Deal</a>
       </div>
     `;
 
     grid.appendChild(card);
-  });
-
-  document.querySelectorAll(".chartBtn").forEach(button => {
-    button.addEventListener("click", () => {
-      showChart(button.dataset.productId, button.dataset.keyword);
-    });
   });
 }
 
@@ -83,7 +72,7 @@ function showChart(productId, keyword) {
   document.getElementById("chartTitle").innerText = `${keyword} Price History`;
 
   if (!chartData.length) {
-    alert("No history data yet. Run the workflow to build history.");
+    alert("No history data yet. Run the workflow a few times to build history.");
     return;
   }
 
@@ -102,11 +91,20 @@ function showChart(productId, keyword) {
     data: {
       labels: labels,
       datasets: [
-        { label: "Lowest Price", data: lowestPrices },
-        { label: "Average Price", data: averagePrices }
+        {
+          label: "Lowest Price",
+          data: lowestPrices
+        },
+        {
+          label: "Average Price",
+          data: averagePrices
+        }
       ]
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
   });
 }
 

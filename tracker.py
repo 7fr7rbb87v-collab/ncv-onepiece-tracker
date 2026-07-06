@@ -18,6 +18,7 @@ def safe_float(value, default=0):
 def load_json(path, default):
     if not os.path.exists(path):
         return default
+
     try:
         with open(path, "r") as file:
             return json.load(file)
@@ -27,15 +28,19 @@ def load_json(path, default):
 
 def save_json(path, data):
     os.makedirs(DATA_DIR, exist_ok=True)
+
     with open(path, "w") as file:
         json.dump(data, file, indent=2)
 
 
 def main():
     os.makedirs(DATA_DIR, exist_ok=True)
+
     watchlist = pd.read_csv("watchlist.csv")
     manual_listings = pd.read_csv("manual_listings.csv")
+
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
     deals = []
     history = load_json(HISTORY_FILE, [])
 
@@ -46,7 +51,10 @@ def main():
         target_resale_price = safe_float(product["target_resale_price"])
         product_type = str(product["type"])
 
-        product_listings = manual_listings[manual_listings["product_id"].astype(str) == product_id]
+        product_listings = manual_listings[
+            manual_listings["product_id"].astype(str) == product_id
+        ]
+
         prices = []
 
         for _, listing in product_listings.iterrows():
@@ -62,6 +70,8 @@ def main():
             prices.append(price)
 
             if price <= max_buy_price:
+                estimated_profit = target_resale_price - price
+
                 deals.append({
                     "product_id": product_id,
                     "keyword": keyword,
@@ -69,7 +79,7 @@ def main():
                     "price": round(price, 2),
                     "max_buy_price": round(max_buy_price, 2),
                     "target_resale_price": round(target_resale_price, 2),
-                    "estimated_profit": round(target_resale_price - price, 2),
+                    "estimated_profit": round(estimated_profit, 2),
                     "url": url,
                     "image": image,
                     "source": source,
@@ -89,8 +99,9 @@ def main():
 
     save_json(DEALS_FILE, deals)
     save_json(HISTORY_FILE, history)
+
     print(f"Saved {len(deals)} deals.")
-    print("Tracker complete.")
+    print(f"Updated history with {len(watchlist)} tracked products.")
 
 
 if __name__ == "__main__":
