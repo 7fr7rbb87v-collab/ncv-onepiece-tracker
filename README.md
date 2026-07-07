@@ -1,15 +1,44 @@
-# NCV One Piece Tracker
+# NCV eBay API Upgrade
 
-Updated logic:
+This version pulls live eBay Browse API listings into the GitHub Pages dashboard.
 
-- Buy Target = listed price × 0.80
-- Sale Target = listed price × 1.35
-- Target Spread = Sale Target - Buy Target
+## Required GitHub Secrets
 
-Upload all files to your GitHub repo, then run:
+Repo → Settings → Secrets and variables → Actions → Secrets:
+
+- `EBAY_CLIENT_ID`
+- `EBAY_CLIENT_SECRET`
+
+Use Production keys from eBay Developer unless you intentionally want sandbox.
+
+## Recommended GitHub Variables
+
+Repo → Settings → Secrets and variables → Actions → Variables:
+
+- `ENABLE_EBAY` = `1`
+- `EBAY_MARKETPLACE_ID` = `EBAY_US`
+- `EBAY_RESULTS_PER_PRODUCT` = `10`
+
+## Upload
+
+Upload the contents of this folder to your repo, not the ZIP itself.
+
+Then run:
 
 Actions → Update Deals → Run workflow
 
-Refresh site with:
+## Check status
 
-https://7fr7rbb87v-collab.github.io/ncv-onepiece-tracker/?v=400
+Open:
+
+`https://YOURUSERNAME.github.io/ncv-onepiece-tracker/data/ebay_status.json`
+
+If there are errors, they will show in that file.
+
+## Target math
+
+- Offer Target = current listing price × 0.80
+- Sale Target = current listing price × 1.35
+- Target Spread = sale target - offer target
+
+No auto-checkout. Manual review only.

@@ -1,0 +1,3 @@
+product_id,retailer,title,price,url,image,stock_status,store,zip_code,notes
+target-onepiece-001,Target,"One Piece Card Game Product",0,"https://www.target.com/","https://via.placeholder.com/300x400?text=Target+Inventory",unknown,"","","Add actual Target product link"
+walmart-onepiece-001,Walmart,"One Piece Card Game Product",0,"https://www.walmart.com/","https://via.placeholder.com/300x400?text=Walmart+Inventory",unknown,"","","Add actual Walmart product link"

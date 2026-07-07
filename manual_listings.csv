@@ -1,13 +1,2 @@
-product_id,title,price,url,image,source
-pbandai-29th,"ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",10.00,"https://p-bandai.com/us/item/N2903432001","https://p-bandai.com/files/seller-products/NSP0464751001/NHe1BsF5kl5qY0wcDHkc.jpg?w=1440&h=1440","Bandai Manual"
-zoro-op05-067,"Zoro-Juurou (SP) OP05-067 Emperors in the New World Foil - Fire 10+",660.00,"https://www.ebay.com/itm/168516274938","https://i.ebayimg.com/images/g/S8YAAeSwzMlqSr0f/s-l1600.jpg","eBay Manual"
-op14-azure-box,"One Piece TCG The Azure Sea's Seven Booster Box",299.99,"https://www.bestbuy.com/product/bandai-one-piece-card-game-the-azure-seas-seven-booster-box/J3GWP8Q634/sku/12776459","https://via.placeholder.com/300x400?text=OP-14+Azure+Sea","Best Buy Manual"
-op12-jp-box,"One Piece Legacy of the Master OP-12 Booster Box Japanese",114.99,"https://www.walmart.com/ip/BANDAI-ONE-PIECE-Card-Game-Master-and-Student-Bonds-OP-12-Booster-Box-Japanese-24-Packs/16449758604","https://via.placeholder.com/300x400?text=OP-12+JP+Box","Walmart Manual"
-prb02-jp-box,"One Piece Card Game The Best Vol. 2 PRB-02 Japanese Booster Box",93.99,"https://www.bestbuy.com/product/bandai-namco-entertainment-one-piece-prb-02-japanese-premium-booster-box-japanese-sealed/C3747Q4YL8/sku/12215867","https://via.placeholder.com/300x400?text=PRB-02+Box","Best Buy Manual"
-learn-together-deck,"One Piece Learn Together Deck Set",24.99,"https://www.boardgamesdallas.com/products/one-piece-tcg-learn-together-deck-set","https://via.placeholder.com/300x400?text=Learn+Together","Manual"
-st20-katakuri,"One Piece Starter Deck ST20 Charlotte Katakuri",5.25,"https://www.ebay.com/itm/187332726985","https://via.placeholder.com/300x400?text=ST20+Katakuri","eBay Manual"
-st08-luffy,"One Piece ST08 Monkey D. Luffy Starter Deck",14.99,"https://heroesandgames.com/products/one-piece-tcg-monkey-d-luffy-starter-deck-st-08","https://via.placeholder.com/300x400?text=ST08+Luffy","Manual"
-st09-yamato,"One Piece Yamato Starter Deck ST09",15.00,"https://www.ebay.com/itm/186077816330","https://via.placeholder.com/300x400?text=ST09+Yamato","eBay Manual"
-live-action-premium,"One Piece Premium Card Collection Live Action Edition",73.91,"https://www.ebay.com","https://via.placeholder.com/300x400?text=Live+Action+Premium","eBay Manual"
-film-red-premium,"Bandai One Piece Premium Card Collection Film Red Edition",199.95,"https://www.ebay.com/itm/395376575711","https://via.placeholder.com/300x400?text=Film+Red+Premium","eBay Manual"
-leader-collection-premium,"One Piece Premium Card Collection Leader Collection",99.90,"https://www.ebay.com","https://via.placeholder.com/300x400?text=Leader+Collection","eBay Manual"
+product_id,title,price,url,image,source,type
+pbandai-29th,"ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",10.00,"https://p-bandai.com/us/item/N2903432001","https://p-bandai.com/files/seller-products/NSP0464751001/NHe1BsF5kl5qY0wcDHkc.jpg?w=1440&h=1440","Bandai Manual",sealed

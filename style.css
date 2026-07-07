@@ -9,23 +9,29 @@ header {
   padding: 28px;
   background: #171a21;
   border-bottom: 1px solid #2a2f3a;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
 }
 
-header h1 {
-  margin: 0 0 8px;
-}
+header h1 { margin: 0 0 8px; }
+header p { margin: 0; color: #b9c0cc; }
 
-header p {
-  margin: 0;
-  color: #b9c0cc;
+.status {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: #2a2f3a;
+  color: #ffffff;
+  max-width: 360px;
 }
+.status.good { background: #123a24; }
+.status.warning { background: #4a3216; }
 
-.filters {
-  padding: 18px 28px;
-}
-
+.filters { padding: 18px 28px; }
 .filters button {
-  margin-right: 8px;
+  margin: 0 8px 8px 0;
   padding: 10px 14px;
   border: 0;
   border-radius: 8px;
@@ -33,17 +39,16 @@ header p {
   font-weight: bold;
 }
 
-main {
-  padding: 0 28px 40px;
-}
+main { padding: 0 28px 40px; }
+h2 { margin-top: 30px; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 18px;
 }
 
-.card {
+.card, .videoCard {
   background: #171a21;
   border: 1px solid #2a2f3a;
   border-radius: 14px;
@@ -52,20 +57,13 @@ main {
 
 .card img {
   width: 100%;
-  height: 250px;
+  height: 240px;
   object-fit: cover;
   background: #222;
 }
 
-.cardBody {
-  padding: 14px;
-}
-
-.card h3 {
-  font-size: 15px;
-  margin: 0 0 10px;
-  line-height: 1.35;
-}
+.cardBody, .videoCard { padding: 14px; }
+.card h3, .videoCard h3 { font-size: 15px; margin: 0 0 10px; }
 
 .badge {
   display: inline-block;
@@ -76,25 +74,10 @@ main {
   margin-bottom: 10px;
 }
 
-.price {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 8px 0;
-}
+.price { font-size: 22px; font-weight: bold; margin: 8px 0; }
+.profit { color: #70e000; font-weight: bold; }
 
-.target {
-  margin: 4px 0;
-  color: #d8dde8;
-}
-
-.profit {
-  color: #70e000;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-.card a,
-.card button {
+.card a, .card button, .videoCard a {
   display: block;
   width: 100%;
   text-align: center;
@@ -107,16 +90,8 @@ main {
   box-sizing: border-box;
   font-weight: bold;
 }
-
-.card a {
-  background: #ffffff;
-  color: #000000;
-}
-
-.card button {
-  background: #303744;
-  color: #ffffff;
-}
+.card a, .videoCard a { background: #ffffff; color: #000000; }
+.card button { background: #303744; color: #ffffff; }
 
 .chartBox {
   margin-top: 32px;
@@ -126,9 +101,14 @@ main {
   border-radius: 14px;
 }
 
-@media (max-width: 600px) {
-  header, .filters, main {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 700px) {
+  header { display: block; }
+  .status { margin-top: 16px; }
+  main, .filters, header { padding-left: 16px; padding-right: 16px; }
 }
