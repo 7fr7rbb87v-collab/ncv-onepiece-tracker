@@ -1,173 +1,203 @@
 let allDeals = [];
 let allHistory = [];
-let retailLeads = [];
-let tiktokVideos = [];
 let sourceStatus = {};
 let priceChart = null;
 
-function money(value) {
-  const number = Number(value || 0);
-  return `$${number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function safeText(value) {
-  return String(value || "").replace(/[&<>'"]/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;"
-  }[c]));
-}
-
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
-}
-
-async function fetchJson(path, fallback) {
-  try {
-    const response = await fetch(`${path}?v=${Date.now()}`);
-    if (!response.ok) return fallback;
-    return await response.json();
-  } catch (error) {
-    console.error(`Could not load ${path}`, error);
-    return fallback;
-  }
-}
-
 async function loadData() {
-  allDeals = await fetchJson("data/deals.json", []);
-  allHistory = await fetchJson("data/history.json", []);
-  retailLeads = await fetchJson("data/retail_leads.json", []);
-  tiktokVideos = await fetchJson("data/tiktok_videos.json", []);
-  sourceStatus = await fetchJson("data/source_status.json", {});
+  try {
+    const dealsRes = await fetch("data/deals.json?v=" + Date.now());
+    const historyRes = await fetch("data/price_history.json?v=" + Date.now());
+    const statusRes = await fetch("data/source_status.json?v=" + Date.now());
 
-  renderStatus();
-  renderStrongLeads();
-  renderDeals(allDeals);
-  renderRetail();
-  renderTikTok();
-}
+    allDeals = await dealsRes.json();
+    allHistory = await historyRes.json();
+    sourceStatus = await statusRes.json();
 
-function renderStatus() {
-  const statusBox = document.getElementById("statusBox");
-  statusBox.textContent = JSON.stringify(sourceStatus, null, 2);
-
-  const ebay = sourceStatus.ebay || {};
-  const topStatus = document.getElementById("topStatus");
-  if (ebay.status === "success") {
-    topStatus.textContent = `eBay connected · ${ebay.listings_found || 0} listings`;
-  } else if (ebay.status) {
-    topStatus.textContent = `eBay status: ${ebay.status}`;
-  } else {
-    topStatus.textContent = "No source status yet";
+    renderDeals(allDeals);
+    renderStats(allDeals);
+    renderSourceStatus(sourceStatus);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("dealsGrid").innerHTML =
+      `<div class="empty-state">Failed to load dashboard data.</div>`;
   }
 }
 
-function dealCard(deal) {
-  const image = deal.image || "https://via.placeholder.com/400x500?text=No+Image";
-  const title = safeText(deal.title || deal.product_name);
-  const grade = safeText(deal.deal_grade || "Watch");
-  const gradeClass = ["A+", "A", "B"].includes(grade) ? "good" : "warn";
+function renderStats(deals) {
+  const totalDeals = deals.length;
+  const buyLeads = deals.filter(d => d.is_buy_lead).length;
+  const avgMargin = totalDeals
+    ? Math.round(deals.reduce((sum, d) => sum + Number(d.estimated_profit || 0), 0) / totalDeals)
+    : 0;
+  const uniqueSources = new Set(deals.map(d => d.source || "Unknown")).size;
 
-  return `
-    <article class="card">
-      <img src="${image}" alt="${title}" loading="lazy" />
-      <div class="card-body">
-        <span class="badge">${safeText(deal.source)} · ${safeText(deal.type)} · ${safeText(deal.era)}</span>
-        <h3>${title}</h3>
-        <div class="price">${money(deal.total_price || deal.price)}</div>
-        <div class="metric">Market listing value: ${money(deal.market_value)}</div>
-        <div class="metric">Buy under-market target: ${money(deal.buy_target)}</div>
-        <div class="metric">Sale target +35%: ${money(deal.sale_target)}</div>
-        <div class="metric">Gap to buy target: ${money(deal.gap_to_buy_target)}</div>
-        <div class="metric">Estimated profit from listing: ${money(deal.estimated_profit)}</div>
-        <div class="metric">Discount to market: ${Number(deal.discount_to_market_percent || 0).toFixed(2)}%</div>
-        <div class="${gradeClass}">Grade: ${grade}${deal.is_buy_lead ? " · BUY LEAD" : ""}</div>
-        <div class="metric">Seller: ${safeText(deal.seller_username || "N/A")}</div>
-        <div class="card-actions">
-          <button onclick="showChart('${safeText(deal.product_id)}', '${safeText(deal.product_name)}')">View chart</button>
-          <a class="button-link" href="${deal.url}" target="_blank" rel="noopener">Open listing</a>
-        </div>
-      </div>
-    </article>
-  `;
-}
+  document.getElementById("statDeals").textContent = totalDeals;
+  document.getElementById("statBuyLeads").textContent = buyLeads;
+  document.getElementById("statMargin").textContent = `$${avgMargin}`;
+  document.getElementById("statSources").textContent = uniqueSources;
 
-function renderStrongLeads() {
-  const grid = document.getElementById("strongLeadsGrid");
-  const strong = allDeals.filter(deal => deal.is_buy_lead || ["A+", "A"].includes(deal.deal_grade)).slice(0, 24);
-  grid.innerHTML = strong.length ? strong.map(dealCard).join("") : "<p class='muted'>No listings are at or under the buy target yet.</p>";
+  const ebayStatus = sourceStatus?.ebay?.status || "unknown";
+  document.getElementById("sourceStatusPill").textContent = `eBay: ${ebayStatus}`;
 }
 
 function renderDeals(deals) {
   const grid = document.getElementById("dealsGrid");
-  grid.innerHTML = deals.length ? deals.map(dealCard).join("") : "<p class='muted'>No eBay listings found yet. Check Source Status for API errors.</p>";
-}
+  grid.innerHTML = "";
 
-function filterDeals(filter) {
-  if (filter === "all") return renderDeals(allDeals);
-  const filtered = allDeals.filter(deal => deal.type === filter || deal.era === filter);
-  renderDeals(filtered);
-}
-
-function showChart(productId, productName) {
-  const rows = allHistory.filter(row => row.product_id === productId);
-  document.getElementById("chartTitle").textContent = `${productName} Price History`;
-
-  if (!rows.length) {
-    alert("No history yet. Run the workflow a few times to build history.");
+  if (!deals || !deals.length) {
+    grid.innerHTML = `<div class="empty-state">No live deals found yet. Run the source pull workflow.</div>`;
     return;
   }
 
+  deals.forEach(deal => {
+    const card = document.createElement("div");
+    card.className = "deal-card";
+
+    const buyBadge = deal.is_buy_lead
+      ? `<span class="badge badge-buy">Buy Lead</span>`
+      : "";
+
+    const productTitle = deal.title || deal.product_name || "Untitled listing";
+    const productId = deal.product_id || "";
+
+    card.innerHTML = `
+      <img class="deal-image" src="${deal.image || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${escapeHtml(productTitle)}">
+      <div class="deal-body">
+        <div class="deal-badges">
+          <span class="badge badge-source">${escapeHtml(deal.source || 'Source')}</span>
+          <span class="badge badge-grade">${escapeHtml(deal.deal_grade || 'Watch')}</span>
+          ${buyBadge}
+        </div>
+
+        <h3 class="deal-title">${escapeHtml(productTitle)}</h3>
+
+        <div class="price-line"><span>Listing Total</span><strong>$${formatNum(deal.listing_total || deal.price)}</strong></div>
+        <div class="price-line"><span>Market Value</span><strong class="market-value">$${formatNum(deal.market_value)}</strong></div>
+        <div class="price-line"><span>Buy Target</span><strong>$${formatNum(deal.buy_target)}</strong></div>
+        <div class="price-line"><span>Sale Target</span><strong>$${formatNum(deal.sale_target)}</strong></div>
+        <div class="price-line"><span>Estimated Profit</span><strong class="${deal.is_buy_lead ? 'buy-lead' : ''}">$${formatNum(deal.estimated_profit)}</strong></div>
+
+        <div class="deal-actions">
+          <button class="btn btn-secondary" onclick="showChart('${escapeAttr(productId)}', '${escapeAttr(productTitle)}')">View Chart</button>
+          <a class="btn btn-primary" href="${deal.url || '#'}" target="_blank" rel="noopener noreferrer">Open Listing</a>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+function filterDeals(type, btn) {
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+
+  if (type === "all") {
+    renderDeals(allDeals);
+    return;
+  }
+
+  if (type === "buy_leads") {
+    renderDeals(allDeals.filter(d => d.is_buy_lead));
+    return;
+  }
+
+  renderDeals(allDeals.filter(d => d.type === type));
+}
+
+function showChart(productId, title) {
+  const rows = allHistory.filter(row => row.product_id === productId);
+
+  document.getElementById("chartTitle").textContent = title || "Price History";
+
+  if (!rows.length) {
+    if (priceChart) priceChart.destroy();
+    return;
+  }
+
+  const labels = rows.map(r => r.timestamp || "");
+  const activeLow = rows.map(r => Number(r.lowest_active_price || 0));
+  const activeAvg = rows.map(r => Number(r.average_active_price || 0));
+  const marketLine = rows.map(r => Number(r.market_value || 0));
+
   const ctx = document.getElementById("priceChart");
+
   if (priceChart) priceChart.destroy();
 
   priceChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: rows.map(row => row.timestamp),
+      labels,
       datasets: [
-        { label: "Lowest active", data: rows.map(row => row.lowest_active_price) },
-        { label: "Average active", data: rows.map(row => row.average_active_price) },
-        { label: "Market value", data: rows.map(row => row.market_value) },
-        { label: "Buy under-market target", data: rows.map(row => row.buy_target) },
-        { label: "Sale target", data: rows.map(row => row.sale_target) }
+        { label: "Lowest Active", data: activeLow },
+        { label: "Average Active", data: activeAvg },
+        { label: "Market Value", data: marketLine }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false }
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: "#f5f7fb" }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#8ea0ba" },
+          grid: { color: "rgba(255,255,255,0.05)" }
+        },
+        y: {
+          ticks: { color: "#8ea0ba" },
+          grid: { color: "rgba(255,255,255,0.05)" }
+        }
+      }
+    }
   });
 }
 
-function renderRetail() {
-  const grid = document.getElementById("retailGrid");
-  grid.innerHTML = retailLeads.length ? retailLeads.map(lead => `
-    <article class="card">
-      <div class="card-body">
-        <span class="badge">${safeText(lead.source)}</span>
-        <h3>${safeText(lead.title)}</h3>
-        <div class="metric">Price signal: ${lead.price_signal ? money(lead.price_signal) : "Not found"}</div>
-        <div class="metric">Buy target: ${lead.buy_target ? money(lead.buy_target) : "N/A"}</div>
-        <p class="muted">${safeText(lead.description)}</p>
-        <a class="button-link" href="${lead.url}" target="_blank" rel="noopener">Open retail lead</a>
-      </div>
-    </article>
-  `).join("") : "<p class='muted'>Retail search is disabled or no leads were found.</p>";
+function renderSourceStatus(status) {
+  const box = document.getElementById("sourceHealth");
+  box.innerHTML = "";
+
+  const sources = [
+    { name: "eBay", key: "ebay" },
+    { name: "eBay Sold", key: "ebay_sold" },
+    { name: "Retail Search", key: "retail" },
+    { name: "TikTok", key: "tiktok" }
+  ];
+
+  sources.forEach(src => {
+    const val = status?.[src.key]?.status || "inactive";
+    const row = document.createElement("div");
+    row.className = "source-row";
+    row.innerHTML = `
+      <span>${src.name}</span>
+      <span class="${val === 'success' ? 'source-ok' : 'source-bad'}">${val}</span>
+    `;
+    box.appendChild(row);
+  });
 }
 
-function renderTikTok() {
-  const grid = document.getElementById("tiktokGrid");
-  grid.innerHTML = tiktokVideos.length ? tiktokVideos.map(video => `
-    <article class="card">
-      ${video.thumbnail_url ? `<img src="${video.thumbnail_url}" alt="${safeText(video.title)}" loading="lazy" />` : ""}
-      <div class="card-body">
-        <span class="badge">${safeText(video.source)}</span>
-        <h3>${safeText(video.title)}</h3>
-        <div class="metric">${safeText(video.author_name)}</div>
-        <a class="button-link" href="${video.url}" target="_blank" rel="noopener">Open TikTok</a>
-      </div>
-    </article>
-  `).join("") : "<p class='muted'>TikTok search is disabled or no videos were found.</p>";
+function formatNum(value) {
+  return Number(value || 0).toFixed(2);
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function escapeAttr(str) {
+  return String(str)
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
 loadData();
