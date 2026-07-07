@@ -1,47 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>NCVault</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NCV One Piece Tracker</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>NCV One Piece Tracker</h1>
-      <p>Live eBay listings, manual deals, retail inventory, TikTok rips, images, and price history.</p>
-    </div>
-    <div class="status" id="ebayStatus">Loading eBay status...</div>
+  <header class="site-header">
+    <h1>NCV One Piece Tracker</h1>
+    <p>One Piece buying board with images, source links, buy targets, sale targets, and price history.</p>
   </header>
 
   <section class="filters">
     <button onclick="filterDeals('all')">All</button>
     <button onclick="filterDeals('single')">Singles</button>
     <button onclick="filterDeals('sealed')">Sealed</button>
-    <button onclick="filterBySource('eBay API')">eBay API</button>
-    <button onclick="filterBySource('Manual')">Manual</button>
   </section>
 
-  <main>
-    <section>
-      <h2>Deal Board</h2>
-      <section id="dealsGrid" class="grid"></section>
-    </section>
+  <main class="layout">
+    <section id="dealsGrid" class="grid"></section>
 
     <section class="chartBox">
       <h2 id="chartTitle">Price History</h2>
       <canvas id="priceChart"></canvas>
-    </section>
-
-    <section>
-      <h2>Target / Walmart Inventory</h2>
-      <section id="retailGrid" class="grid"></section>
-    </section>
-
-    <section>
-      <h2>TikTok Rip Videos</h2>
-      <section id="tiktokGrid" class="videoGrid"></section>
     </section>
   </main>
 
