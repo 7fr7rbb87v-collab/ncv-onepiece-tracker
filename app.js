@@ -1,207 +1,179 @@
-let deals = [];
-let ebayListings = [];
-let activeHistory = [];
-let soldHistory = [];
-let retailInventory = [];
+let allDeals = [];
+let allHistory = [];
+let retailLeads = [];
 let tiktokVideos = [];
 let sourceStatus = {};
 let priceChart = null;
 
-const cacheBust = `?v=${Date.now()}`;
+const money = value => Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const safe = value => String(value || "").replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+const btnSafe = value => String(value || "").replace(/'/g, "\\'");
 
-function money(value) {
-  const n = Number(value || 0);
-  if (!n) return "$0.00";
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
-
-function pct(value) {
-  const n = Number(value || 0);
-  return `${n.toFixed(1)}%`;
-}
-
-function esc(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-async function getJson(path, fallback) {
+async function fetchJson(path, fallback) {
   try {
-    const res = await fetch(path + cacheBust);
-    if (!res.ok) return fallback;
-    return await res.json();
-  } catch (e) {
-    console.error(`Failed loading ${path}`, e);
+    const response = await fetch(`${path}?v=${Date.now()}`);
+    if (!response.ok) return fallback;
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to load ${path}`, error);
     return fallback;
   }
 }
 
 async function loadData() {
-  [deals, ebayListings, activeHistory, soldHistory, retailInventory, tiktokVideos, sourceStatus] = await Promise.all([
-    getJson("data/deals.json", []),
-    getJson("data/ebay_listings.json", []),
-    getJson("data/active_price_history.json", []),
-    getJson("data/sold_price_history.json", []),
-    getJson("data/retail_inventory.json", []),
-    getJson("data/tiktok_videos.json", []),
-    getJson("data/source_status.json", {})
-  ]);
+  allDeals = await fetchJson("data/deals.json", []);
+  allHistory = await fetchJson("data/history.json", []);
+  retailLeads = await fetchJson("data/retail_leads.json", []);
+  tiktokVideos = await fetchJson("data/tiktok_videos.json", []);
+  sourceStatus = await fetchJson("data/source_status.json", {});
 
-  document.getElementById("lastRun").textContent = sourceStatus.last_run || "Not run yet";
-  renderDeals();
-  renderEbay();
-  renderSold();
+  renderStrongLeads();
+  renderDeals(allDeals);
   renderRetail();
   renderTikTok();
   renderStatus();
-  populateProductSelect();
 }
 
-function showSection(id) {
-  document.querySelectorAll(".section").forEach(section => section.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  if (id === "charts") renderChart();
+function gradeClass(grade) {
+  const g = String(grade || "").toLowerCase().replace("+", "-plus");
+  return `grade-${g}`;
 }
 
-function card(listing, mode = "deal") {
-  const grade = listing.deal_grade || "";
-  const gradeClass = `grade-${String(grade).replace("+", "\\+")}`;
-  const image = listing.image || "https://via.placeholder.com/400x500?text=No+Image";
-  const total = listing.total_price || listing.price || 0;
-  const title = listing.title || listing.product_name || "Untitled result";
-  const url = listing.url || "#";
-
+function listingCard(deal) {
+  const productId = btnSafe(deal.product_id);
+  const productName = btnSafe(deal.product_name || deal.keyword || deal.title);
   return `
     <article class="card">
-      <img src="${esc(image)}" alt="${esc(title)}" loading="lazy">
+      <img src="${safe(deal.image) || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${safe(deal.title)}">
       <div class="card-body">
         <div class="badges">
-          <span class="badge">${esc(listing.source || "Source")}</span>
-          <span class="badge">${esc(listing.type || "")}</span>
-          <span class="badge">${esc(listing.era || "")}</span>
-          ${grade ? `<span class="badge ${gradeClass}">Grade ${esc(grade)}</span>` : ""}
+          <span class="badge">${safe(deal.source || 'Source')}</span>
+          <span class="badge">${safe(deal.type || 'item')}</span>
+          <span class="badge">${safe(deal.era || 'era')}</span>
+          <span class="badge ${gradeClass(deal.deal_grade)}">${safe(deal.deal_grade || 'Grade')}</span>
         </div>
-        <h3>${esc(title)}</h3>
-        <div class="price">${money(total)}</div>
-        ${listing.shipping ? `<div class="metric">Shipping: <strong>${money(listing.shipping)}</strong></div>` : ""}
-        ${listing.market_value ? `<div class="metric">Market value: <strong>${money(listing.market_value)}</strong> <small>(${esc(listing.market_value_source)})</small></div>` : ""}
-        ${listing.buy_target ? `<div class="metric">Buy target -20%: <strong>${money(listing.buy_target)}</strong></div>` : ""}
-        ${listing.sale_target ? `<div class="metric">Sale target +35%: <strong>${money(listing.sale_target)}</strong></div>` : ""}
-        ${listing.expected_profit_at_sale_target ? `<div class="metric profit">Expected spread: ${money(listing.expected_profit_at_sale_target)}</div>` : ""}
-        ${listing.discount_to_market_pct ? `<div class="metric">Discount to market: <strong>${pct(listing.discount_to_market_pct)}</strong></div>` : ""}
-        ${listing.condition ? `<div class="metric">Condition: <strong>${esc(listing.condition)}</strong></div>` : ""}
-        ${listing.seller_username ? `<div class="metric">Seller: <strong>${esc(listing.seller_username)}</strong> ${listing.seller_feedback_percentage ? `· ${esc(listing.seller_feedback_percentage)}%` : ""}</div>` : ""}
-        <a href="${esc(url)}" target="_blank" rel="noopener">Open Listing</a>
+        <h3>${safe(deal.title)}</h3>
+        <div class="price">$${money(deal.total_price || deal.price)}</div>
+        <div class="meta">
+          Listed: $${money(deal.price)}${Number(deal.shipping || 0) ? ` + ship $${money(deal.shipping)}` : ''}<br>
+          Market value: $${money(deal.market_value)}<br>
+          Buy target: $${money(deal.buy_target)}<br>
+          Sale target: $${money(deal.sale_target)}<br>
+          Discount: ${Number(deal.discount_to_market_percent || 0).toFixed(1)}%<br>
+          Seller: ${safe(deal.seller_username || 'n/a')}
+        </div>
+        <div class="actions">
+          <button onclick="showChart('${productId}', '${productName}')">View Chart</button>
+          <a href="${safe(deal.url)}" target="_blank" rel="noopener">Open Listing</a>
+        </div>
       </div>
     </article>`;
 }
 
-function renderDeals() {
-  const el = document.getElementById("dealGrid");
-  const strong = deals.filter(d => ["A+", "A", "B", "Watch"].includes(d.deal_grade)).slice(0, 80);
-  el.innerHTML = strong.length ? strong.map(d => card(d, "deal")).join("") : `<div class="empty">No strong leads yet. Confirm EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, ENABLE_EBAY=1, then run the workflow.</div>`;
+function renderStrongLeads() {
+  const grid = document.getElementById("strongLeadsGrid");
+  const strong = allDeals.filter(d => ["A+", "A", "B"].includes(d.deal_grade)).slice(0, 24);
+  grid.innerHTML = strong.length ? strong.map(listingCard).join("") : `<div class="empty">No strong leads yet. Run the workflow after adding eBay API secrets.</div>`;
 }
 
-function renderEbay() {
-  const el = document.getElementById("ebayGrid");
-  el.innerHTML = ebayListings.length ? ebayListings.slice(0, 120).map(d => card(d, "ebay")).join("") : `<div class="empty">No eBay listings pulled yet.</div>`;
+function renderDeals(deals) {
+  const grid = document.getElementById("dealsGrid");
+  grid.innerHTML = deals.length ? deals.map(listingCard).join("") : `<div class="empty">No eBay listings found yet. Check data/ebay_status.json after running the workflow.</div>`;
 }
 
-function renderSold() {
-  const el = document.getElementById("soldGrid");
-  if (!soldHistory.length) {
-    el.innerHTML = `<div class="empty">No sold comps available yet. eBay Marketplace Insights is limited access. Enable it with ENABLE_EBAY_SOLD=1 after approval.</div>`;
-    return;
-  }
-  el.innerHTML = soldHistory.slice().reverse().slice(0, 120).map(s => `
-    <article class="card">
-      <img src="${esc(s.image || 'https://via.placeholder.com/400x500?text=Sold+Comp')}" alt="${esc(s.title)}" loading="lazy">
-      <div class="card-body">
-        <div class="badges"><span class="badge">${esc(s.source)}</span><span class="badge">${esc(s.type)}</span></div>
-        <h3>${esc(s.title)}</h3>
-        <div class="price">${money(s.total_sold_price || s.sold_price)}</div>
-        <div class="metric">Sold date: <strong>${esc(s.sold_date || 'n/a')}</strong></div>
-        <a href="${esc(s.url || '#')}" target="_blank" rel="noopener">Open Sold Comp</a>
-      </div>
-    </article>`).join("");
+function filterDeals(type) {
+  if (type === "all") return renderDeals(allDeals);
+  const filtered = allDeals.filter(deal => deal.type === type || deal.era === type);
+  renderDeals(filtered);
 }
 
 function renderRetail() {
-  const el = document.getElementById("retailGrid");
-  if (!retailInventory.length) {
-    el.innerHTML = `<div class="empty">No retail source leads yet. Add BRAVE_SEARCH_API_KEY and set ENABLE_RETAIL_SEARCH=1.</div>`;
+  const grid = document.getElementById("retailGrid");
+  if (!retailLeads.length) {
+    grid.innerHTML = `<div class="empty">Retail search is off or no retail leads were found. Turn ENABLE_RETAIL_SEARCH=1 and add BRAVE_SEARCH_API_KEY to use this.</div>`;
     return;
   }
-  el.innerHTML = retailInventory.map(r => `
+  grid.innerHTML = retailLeads.map(lead => `
     <article class="card">
       <div class="card-body">
-        <div class="badges"><span class="badge">${esc(r.retailer)}</span><span class="badge">${esc(r.stock_status)}</span></div>
-        <h3>${esc(r.title)}</h3>
-        ${r.price ? `<div class="price">${money(r.price)}</div><div class="metric">Buy target: <strong>${money(r.buy_target)}</strong></div><div class="metric">Sale target: <strong>${money(r.sale_target)}</strong></div>` : `<div class="metric">Price: <strong>Check source</strong></div>`}
-        <p class="metric">${esc(r.description || '')}</p>
-        <a href="${esc(r.url)}" target="_blank" rel="noopener">Open Retail Source</a>
+        <div class="badges"><span class="badge">Retail Lead</span><span class="badge">${safe(lead.source)}</span></div>
+        <h3>${safe(lead.title)}</h3>
+        <div class="meta">${safe(lead.description)}</div>
+        ${Number(lead.price_signal || 0) ? `<div class="price">$${money(lead.price_signal)}</div><div class="meta">Buy target: $${money(lead.buy_target)}<br>Sale target: $${money(lead.sale_target)}</div>` : ''}
+        <div class="actions"><a href="${safe(lead.url)}" target="_blank" rel="noopener">Open Product</a></div>
       </div>
     </article>`).join("");
 }
 
 function renderTikTok() {
-  const el = document.getElementById("tiktokGrid");
+  const grid = document.getElementById("tiktokGrid");
   if (!tiktokVideos.length) {
-    el.innerHTML = `<div class="empty">No TikTok rip videos discovered yet. Add BRAVE_SEARCH_API_KEY and set ENABLE_TIKTOK_SEARCH=1.</div>`;
+    grid.innerHTML = `<div class="empty">TikTok search is off or no videos were found. Turn ENABLE_TIKTOK_SEARCH=1 and add BRAVE_SEARCH_API_KEY to use this.</div>`;
     return;
   }
-  el.innerHTML = tiktokVideos.map(v => `
+  grid.innerHTML = tiktokVideos.map(video => `
     <article class="card">
       <div class="card-body">
-        <div class="badges"><span class="badge">${esc(v.source)}</span><span class="badge">${esc(v.product_id)}</span></div>
-        <h3>${esc(v.title || 'TikTok video')}</h3>
-        ${v.embed_html || (v.thumbnail_url ? `<img src="${esc(v.thumbnail_url)}" alt="${esc(v.title)}">` : '')}
-        <a href="${esc(v.url)}" target="_blank" rel="noopener">Open TikTok</a>
+        <div class="badges"><span class="badge">TikTok</span><span class="badge">${safe(video.author_name || '')}</span></div>
+        <h3>${safe(video.title)}</h3>
+        ${video.thumbnail_url ? `<img src="${safe(video.thumbnail_url)}" alt="${safe(video.title)}">` : ''}
+        <div class="actions"><a href="${safe(video.url)}" target="_blank" rel="noopener">Open TikTok</a></div>
       </div>
     </article>`).join("");
-  if (window.tiktokEmbedLoad) window.tiktokEmbedLoad();
 }
 
 function renderStatus() {
-  document.getElementById("statusBox").textContent = JSON.stringify(sourceStatus, null, 2);
+  const statusBox = document.getElementById("statusBox");
+  const pill = document.getElementById("statusPill");
+  statusBox.textContent = JSON.stringify(sourceStatus, null, 2);
+
+  const ebay = sourceStatus.ebay || {};
+  if (ebay.status === "success") {
+    pill.textContent = `eBay connected · ${ebay.listings_found || 0} listings`;
+  } else if (ebay.status) {
+    pill.textContent = `eBay status: ${ebay.status}`;
+  } else {
+    pill.textContent = "Status not generated yet";
+  }
 }
 
-function populateProductSelect() {
-  const select = document.getElementById("productSelect");
-  const products = [...new Map(activeHistory.map(h => [h.product_id, h])).values()];
-  select.innerHTML = products.map(p => `<option value="${esc(p.product_id)}">${esc(p.product_name || p.product_id)}</option>`).join("");
-  renderChart();
-}
+function showChart(productId, productName) {
+  const chartData = allHistory.filter(row => row.product_id === productId);
+  document.getElementById("chartTitle").innerText = `${productName} Price History`;
+  if (!chartData.length) {
+    alert("No history data yet. Run the workflow a few times to build the chart.");
+    return;
+  }
 
-function renderChart() {
-  const select = document.getElementById("productSelect");
-  if (!select.value) return;
-  const rows = activeHistory.filter(h => h.product_id === select.value);
+  const labels = chartData.map(row => row.timestamp);
   const ctx = document.getElementById("priceChart");
   if (priceChart) priceChart.destroy();
+
   priceChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: rows.map(r => r.timestamp),
+      labels,
       datasets: [
-        { label: "Lowest active", data: rows.map(r => r.lowest_active_price) },
-        { label: "Average active", data: rows.map(r => r.average_active_price) },
-        { label: "Market value", data: rows.map(r => r.market_value) }
+        { label: "Lowest active price", data: chartData.map(row => row.lowest_active_price) },
+        { label: "Average active price", data: chartData.map(row => row.average_active_price) },
+        { label: "Market value", data: chartData.map(row => row.market_value) },
+        { label: "Buy target", data: chartData.map(row => row.buy_target) },
+        { label: "Sale target", data: chartData.map(row => row.sale_target) }
       ]
     },
     options: {
       responsive: true,
-      plugins: { legend: { labels: { color: "#f4f6fb" } } },
-      scales: {
-        x: { ticks: { color: "#aab3c2" }, grid: { color: "#293143" } },
-        y: { ticks: { color: "#aab3c2" }, grid: { color: "#293143" } }
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: context => `${context.dataset.label}: $${money(context.raw)}`
+          }
+        }
       }
     }
   });
+
+  document.getElementById("charts").scrollIntoView({ behavior: "smooth" });
 }
 
 loadData();

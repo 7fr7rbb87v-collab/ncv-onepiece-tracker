@@ -1,6 +1,4 @@
-retailer,query,max_results
-Walmart,"site:walmart.com/ip One Piece Card Game booster box",8
-Walmart,"site:walmart.com/ip One Piece Card Game starter deck",8
-Target,"site:target.com One Piece Card Game booster",8
-Target,"site:target.com One Piece trading cards",8
-Best Buy,"site:bestbuy.com One Piece Card Game booster box",8
+product_id,product_name,keywords,retailers,max_results
+op14-azure-box,One Piece OP-14 Azure Sea Booster Box,"One Piece OP-14 Azure Sea booster box Target Walmart Best Buy",Target|Walmart|Best Buy,5
+op12-box,One Piece OP-12 Booster Box,"One Piece OP-12 booster box Target Walmart Best Buy",Target|Walmart|Best Buy,5
+premium-card-collection-29th,Premium Card Collection 29th Anniversary,"ONE PIECE CARD GAME Premium Card Collection 29th Anniversary Bandai Walmart Target",Target|Walmart|Bandai,5

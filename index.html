@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NCV Source Pull Tracker</title>
+  <title>NCV One Piece Source Pull Tracker</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -12,86 +12,77 @@
     <div>
       <p class="eyebrow">Neighborhood Card Vault</p>
       <h1>One Piece Source Pull Tracker</h1>
-      <p class="subtitle">eBay live listings, sold comp signals, price history, TikTok rip videos, and retail source leads.</p>
+      <p>eBay live listings, price history, TikTok rip videos, and retail source leads.</p>
     </div>
-    <div class="status-card">
-      <span id="lastRun">Loading…</span>
-      <small>Source status</small>
-    </div>
+    <div id="statusPill" class="status-pill">Loading source status…</div>
   </header>
 
   <nav class="tabs">
-    <button onclick="showSection('deals')">Strong Leads</button>
-    <button onclick="showSection('ebay')">eBay Live</button>
-    <button onclick="showSection('charts')">Charts</button>
-    <button onclick="showSection('sold')">Sold Comps</button>
-    <button onclick="showSection('retail')">Target/Walmart</button>
-    <button onclick="showSection('tiktok')">TikTok Rips</button>
-    <button onclick="showSection('status')">Status</button>
+    <a href="#strongLeads">Strong Leads</a>
+    <a href="#ebayLive">eBay Live</a>
+    <a href="#charts">Charts</a>
+    <a href="#retail">Target/Walmart</a>
+    <a href="#tiktok">TikTok Rips</a>
+    <a href="#status">Status</a>
   </nav>
 
   <main>
-    <section id="deals" class="section active">
-      <div class="section-head">
+    <section id="strongLeads" class="panel">
+      <div class="panel-header">
         <h2>Strong Buy Leads</h2>
-        <p>Ranked by discount to estimated market value. Market value uses eBay sold median when available, otherwise active listing median.</p>
+        <p>Ranked by discount to estimated market value. Market value uses active listing median until sold comps are approved.</p>
       </div>
-      <div id="dealGrid" class="grid"></div>
+      <div id="strongLeadsGrid" class="grid"></div>
     </section>
 
-    <section id="ebay" class="section">
-      <div class="section-head">
+    <section id="ebayLive" class="panel">
+      <div class="panel-header">
         <h2>eBay Live Listings</h2>
         <p>All current eBay source results from your watchlist.</p>
       </div>
-      <div id="ebayGrid" class="grid"></div>
+      <div class="filters">
+        <button onclick="filterDeals('all')">All</button>
+        <button onclick="filterDeals('single')">Singles</button>
+        <button onclick="filterDeals('sealed')">Sealed</button>
+        <button onclick="filterDeals('vintage')">Vintage</button>
+        <button onclick="filterDeals('modern')">Modern</button>
+      </div>
+      <div id="dealsGrid" class="grid"></div>
     </section>
 
-    <section id="charts" class="section">
-      <div class="section-head">
-        <h2>Price History</h2>
-        <p>Lowest active price, average active price, and market value over time.</p>
+    <section id="charts" class="panel">
+      <div class="panel-header">
+        <h2 id="chartTitle">Price History</h2>
+        <p>Lowest active price, average active price, market value, buy target, and sale target over time.</p>
       </div>
-      <select id="productSelect" onchange="renderChart()"></select>
-      <div class="chart-box">
-        <canvas id="priceChart"></canvas>
-      </div>
+      <canvas id="priceChart"></canvas>
     </section>
 
-    <section id="sold" class="section">
-      <div class="section-head">
-        <h2>Sold Comp History</h2>
-        <p>Requires eBay Marketplace Insights approval. If unavailable, the tracker will still build active listing history.</p>
-      </div>
-      <div id="soldGrid" class="grid"></div>
-    </section>
-
-    <section id="retail" class="section">
-      <div class="section-head">
+    <section id="retail" class="panel">
+      <div class="panel-header">
         <h2>Target / Walmart / Retail Source Leads</h2>
         <p>Retail source discovery uses approved search API results. Always confirm stock on the retailer page.</p>
       </div>
       <div id="retailGrid" class="grid"></div>
     </section>
 
-    <section id="tiktok" class="section">
-      <div class="section-head">
+    <section id="tiktok" class="panel">
+      <div class="panel-header">
         <h2>TikTok Rip Videos</h2>
         <p>Embeds videos through TikTok oEmbed. No video downloads.</p>
       </div>
       <div id="tiktokGrid" class="video-grid"></div>
     </section>
 
-    <section id="status" class="section">
-      <div class="section-head">
+    <section id="status" class="panel">
+      <div class="panel-header">
         <h2>Source Status</h2>
         <p>Use this to debug missing API keys, limited sold-comps access, or search errors.</p>
       </div>
-      <pre id="statusBox"></pre>
+      <pre id="statusBox">Loading…</pre>
     </section>
   </main>
 
-  <script async src="https://www.tiktok.com/embed.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
