@@ -1,7 +1,16 @@
-product_id,product_name,type,era,keywords,exclude_words,ebay_category,condition_filter,max_results
-op01-romance-dawn-box,One Piece Romance Dawn OP-01 Booster Box,sealed,modern,"One Piece OP-01 Romance Dawn booster box sealed","empty box,case break,digital,proxy,custom",183050,new,20
-op02-paramount-war-box,One Piece Paramount War OP-02 Booster Box,sealed,modern,"One Piece OP-02 Paramount War booster box sealed","empty box,digital,proxy,custom",183050,new,20
-op05-manga-luffy,Monkey D. Luffy Manga OP05-119,single,modern,"One Piece OP05-119 Manga Luffy","proxy,custom,metal,orica,digital",183050,used,20
-c01-luffy-carddass,1999 One Piece Carddass Hyper Battle Luffy C01,single,vintage,"1999 One Piece Carddass Hyper Battle Luffy C01","proxy,custom,reprint,digital",183050,used,20
-jump-festa-2008-luffy,2008 Jump Festa Luffy Promo,single,vintage,"2008 Jump Festa Luffy promo One Piece card","proxy,custom,reprint,digital",183050,used,20
-premium-card-collection-29th,Premium Card Collection 29th Anniversary,sealed,modern,"ONE PIECE CARD GAME Premium Card Collection 29th Anniversary","opened,used,proxy",183050,new,20
+product_id,product_name,type,era,keywords,exclude_words,ebay_category,max_results
+op01-romance-dawn-box,One Piece Romance Dawn OP-01 Booster Box,sealed,modern,"One Piece OP-01 Romance Dawn booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+op02-paramount-war-box,One Piece Paramount War OP-02 Booster Box,sealed,modern,"One Piece OP-02 Paramount War booster box sealed","empty box,digital,proxy,custom,orica",,30
+op05-manga-luffy,Monkey D. Luffy Manga OP05-119,single,modern,"One Piece OP05-119 Manga Luffy","proxy,custom,metal,orica,digital",,30
+c01-luffy-carddass,1999 One Piece Carddass Hyper Battle Luffy C01,single,vintage,"1999 One Piece Carddass Hyper Battle Luffy C01","proxy,custom,reprint,digital",,30
+jump-festa-2008-luffy,2008 Jump Festa Luffy Promo,single,vintage,"2008 Jump Festa Luffy promo One Piece card","proxy,custom,reprint,digital",,30
+premium-card-collection-29th,Premium Card Collection 29th Anniversary,sealed,modern,"ONE PIECE CARD GAME Premium Card Collection 29th Anniversary","opened,used,proxy,custom",,30
+op05-awakening-box,One Piece OP-05 Awakening of the New Era Booster Box,sealed,modern,"One Piece OP-05 Awakening of the New Era booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+op06-wings-box,One Piece OP-06 Wings of the Captain Booster Box,sealed,modern,"One Piece OP-06 Wings of the Captain booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+op07-500-years-box,One Piece OP-07 500 Years in the Future Booster Box,sealed,modern,"One Piece OP-07 500 Years in the Future booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+op08-two-legends-box,One Piece OP-08 Two Legends Booster Box,sealed,modern,"One Piece OP-08 Two Legends booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+op09-emperors-box,One Piece OP-09 Emperors in the New World Booster Box,sealed,modern,"One Piece OP-09 Emperors in the New World booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+prb01-premium-box,One Piece PRB-01 Premium Booster Box,sealed,modern,"One Piece PRB-01 Premium Booster box sealed","empty box,case break,digital,proxy,custom,orica",,30
+zoro-op05-067-sp,Zoro-Juurou SP OP05-067,single,modern,"One Piece OP05-067 Zoro-Juurou SP","proxy,custom,metal,orica,digital",,30
+shanks-op09-manga,Shanks Manga OP09,single,modern,"One Piece OP09 Manga Shanks","proxy,custom,metal,orica,digital",,30
+roger-op09-manga,Gol D Roger Manga OP09,single,modern,"One Piece OP09 Manga Gol D Roger","proxy,custom,metal,orica,digital",,30
