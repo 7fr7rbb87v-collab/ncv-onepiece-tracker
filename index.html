@@ -3,31 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NCV One Piece Tracker</title>
+  <title>NCV Source Pull Tracker</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <h1>NCV One Piece Tracker</h1>
-    <p>One Piece buying board with images, source links, buy targets, sale targets, and price history.</p>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Neighborhood Card Vault</p>
+      <h1>One Piece Source Pull Tracker</h1>
+      <p class="subtitle">eBay live listings, sold comp signals, price history, TikTok rip videos, and retail source leads.</p>
+    </div>
+    <div class="status-card">
+      <span id="lastRun">Loading…</span>
+      <small>Source status</small>
+    </div>
   </header>
 
-  <section class="filters">
-    <button onclick="filterDeals('all')">All</button>
-    <button onclick="filterDeals('single')">Singles</button>
-    <button onclick="filterDeals('sealed')">Sealed</button>
-  </section>
+  <nav class="tabs">
+    <button onclick="showSection('deals')">Strong Leads</button>
+    <button onclick="showSection('ebay')">eBay Live</button>
+    <button onclick="showSection('charts')">Charts</button>
+    <button onclick="showSection('sold')">Sold Comps</button>
+    <button onclick="showSection('retail')">Target/Walmart</button>
+    <button onclick="showSection('tiktok')">TikTok Rips</button>
+    <button onclick="showSection('status')">Status</button>
+  </nav>
 
-  <main class="layout">
-    <section id="dealsGrid" class="grid"></section>
+  <main>
+    <section id="deals" class="section active">
+      <div class="section-head">
+        <h2>Strong Buy Leads</h2>
+        <p>Ranked by discount to estimated market value. Market value uses eBay sold median when available, otherwise active listing median.</p>
+      </div>
+      <div id="dealGrid" class="grid"></div>
+    </section>
 
-    <section class="chartBox">
-      <h2 id="chartTitle">Price History</h2>
-      <canvas id="priceChart"></canvas>
+    <section id="ebay" class="section">
+      <div class="section-head">
+        <h2>eBay Live Listings</h2>
+        <p>All current eBay source results from your watchlist.</p>
+      </div>
+      <div id="ebayGrid" class="grid"></div>
+    </section>
+
+    <section id="charts" class="section">
+      <div class="section-head">
+        <h2>Price History</h2>
+        <p>Lowest active price, average active price, and market value over time.</p>
+      </div>
+      <select id="productSelect" onchange="renderChart()"></select>
+      <div class="chart-box">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </section>
+
+    <section id="sold" class="section">
+      <div class="section-head">
+        <h2>Sold Comp History</h2>
+        <p>Requires eBay Marketplace Insights approval. If unavailable, the tracker will still build active listing history.</p>
+      </div>
+      <div id="soldGrid" class="grid"></div>
+    </section>
+
+    <section id="retail" class="section">
+      <div class="section-head">
+        <h2>Target / Walmart / Retail Source Leads</h2>
+        <p>Retail source discovery uses approved search API results. Always confirm stock on the retailer page.</p>
+      </div>
+      <div id="retailGrid" class="grid"></div>
+    </section>
+
+    <section id="tiktok" class="section">
+      <div class="section-head">
+        <h2>TikTok Rip Videos</h2>
+        <p>Embeds videos through TikTok oEmbed. No video downloads.</p>
+      </div>
+      <div id="tiktokGrid" class="video-grid"></div>
+    </section>
+
+    <section id="status" class="section">
+      <div class="section-head">
+        <h2>Source Status</h2>
+        <p>Use this to debug missing API keys, limited sold-comps access, or search errors.</p>
+      </div>
+      <pre id="statusBox"></pre>
     </section>
   </main>
 
+  <script async src="https://www.tiktok.com/embed.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

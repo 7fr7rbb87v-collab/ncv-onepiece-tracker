@@ -1,41 +1,54 @@
-import os
+import base64
 import json
 import math
-import base64
-import requests
-import pandas as pd
+import os
+import re
+import statistics
+import time
 from datetime import datetime, timezone
-from urllib.parse import quote
+from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse, urlunparse
+
+import pandas as pd
+import requests
 
 DATA_DIR = "data"
-DEALS_FILE = os.path.join(DATA_DIR, "deals.json")
-HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
-RETAIL_FILE = os.path.join(DATA_DIR, "retail_inventory.json")
-TIKTOK_FILE = os.path.join(DATA_DIR, "tiktok_videos.json")
-EBAY_STATUS_FILE = os.path.join(DATA_DIR, "ebay_status.json")
+FILES = {
+    "deals": os.path.join(DATA_DIR, "deals.json"),
+    "ebay_listings": os.path.join(DATA_DIR, "ebay_listings.json"),
+    "active_history": os.path.join(DATA_DIR, "active_price_history.json"),
+    "sold_history": os.path.join(DATA_DIR, "sold_price_history.json"),
+    "tiktok": os.path.join(DATA_DIR, "tiktok_videos.json"),
+    "retail": os.path.join(DATA_DIR, "retail_inventory.json"),
+    "status": os.path.join(DATA_DIR, "source_status.json"),
+}
 
-EBAY_CLIENT_ID = os.getenv("EBAY_CLIENT_ID", "").strip()
-EBAY_CLIENT_SECRET = os.getenv("EBAY_CLIENT_SECRET", "").strip()
-EBAY_MARKETPLACE_ID = os.getenv("EBAY_MARKETPLACE_ID", "EBAY_US").strip() or "EBAY_US"
-EBAY_RESULTS_PER_PRODUCT = int(os.getenv("EBAY_RESULTS_PER_PRODUCT", "10"))
-ENABLE_EBAY = os.getenv("ENABLE_EBAY", "1").strip() == "1"
+EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
+EBAY_BROWSE_SEARCH_URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
+EBAY_SOLD_SEARCH_URL = "https://api.ebay.com/buy/marketplace_insights/v1_beta/item_sales/search"
+BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
+TIKTOK_OEMBED_URL = "https://www.tiktok.com/oembed"
 
 
-def safe_float(value, default=0):
+def now_utc() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_int(name: str, default: int) -> int:
     try:
-        if value is None:
-            return default
-        if isinstance(value, float) and math.isnan(value):
-            return default
-        text = str(value).replace("$", "").replace(",", "").strip()
-        if text == "" or text.lower() == "nan":
-            return default
-        return float(text)
+        return int(os.getenv(name, default))
     except Exception:
         return default
 
 
-def clean_string(value):
+def clean_string(value: Any) -> str:
     if value is None:
         return ""
     try:
@@ -46,7 +59,18 @@ def clean_string(value):
     return str(value).strip()
 
 
-def load_json(path, default):
+def safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        if isinstance(value, float) and math.isnan(value):
+            return default
+        return float(str(value).replace("$", "").replace(",", "").strip())
+    except Exception:
+        return default
+
+
+def load_json(path: str, default: Any) -> Any:
     if not os.path.exists(path):
         return default
     try:
@@ -56,273 +80,499 @@ def load_json(path, default):
         return default
 
 
-def save_json(path, data):
+def save_json(path: str, data: Any) -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2, ensure_ascii=False)
 
 
-def money_targets(price):
-    buy_target = round(price * 0.80, 2)
-    sale_target = round(price * 1.35, 2)
-    target_spread = round(sale_target - buy_target, 2)
-    return buy_target, sale_target, target_spread
+def read_csv(path: str) -> pd.DataFrame:
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    return pd.read_csv(path).fillna("")
 
 
-def get_ebay_token():
-    if not EBAY_CLIENT_ID or not EBAY_CLIENT_SECRET:
-        raise RuntimeError("Missing EBAY_CLIENT_ID or EBAY_CLIENT_SECRET GitHub secrets.")
-
-    credentials = f"{EBAY_CLIENT_ID}:{EBAY_CLIENT_SECRET}"
-    encoded = base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
-
-    response = requests.post(
-        "https://api.ebay.com/identity/v1/oauth2/token",
-        headers={
-            "Authorization": f"Basic {encoded}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data={
-            "grant_type": "client_credentials",
-            "scope": "https://api.ebay.com/oauth/api_scope",
-        },
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json()["access_token"]
+def split_words(value: str) -> List[str]:
+    return [word.strip().lower() for word in clean_string(value).split(",") if word.strip()]
 
 
-def search_ebay(keyword, token):
-    response = requests.get(
-        "https://api.ebay.com/buy/browse/v1/item_summary/search",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "X-EBAY-C-MARKETPLACE-ID": EBAY_MARKETPLACE_ID,
-        },
-        params={
-            "q": keyword,
-            "limit": EBAY_RESULTS_PER_PRODUCT,
-            "sort": "newlyListed",
-        },
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json().get("itemSummaries", [])
+def title_is_allowed(title: str, exclude_words: str) -> bool:
+    lower = title.lower()
+    return not any(word in lower for word in split_words(exclude_words))
 
 
-def parse_ebay_listing(product, listing, now):
-    product_id = clean_string(product.get("product_id", ""))
-    keyword = clean_string(product.get("keyword", ""))
-    product_type = clean_string(product.get("type", "single"))
+def first_price_from_text(text: str) -> float:
+    match = re.search(r"\$\s*([0-9]+(?:,[0-9]{3})*(?:\.[0-9]{2})?)", text or "")
+    if not match:
+        return 0.0
+    return safe_float(match.group(1))
 
-    title = clean_string(listing.get("title", keyword))
-    price = safe_float((listing.get("price") or {}).get("value", 0))
-    url = clean_string(listing.get("itemWebUrl", ""))
-    image = clean_string((listing.get("image") or {}).get("imageUrl", ""))
-    condition = clean_string(listing.get("condition", ""))
-    item_id = clean_string(listing.get("itemId", ""))
-    seller = listing.get("seller") or {}
-    seller_username = clean_string(seller.get("username", ""))
-    feedback_percentage = clean_string(seller.get("feedbackPercentage", ""))
-    feedback_score = clean_string(seller.get("feedbackScore", ""))
 
-    if price <= 0:
+def normalize_url(url: str) -> str:
+    url = clean_string(url)
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
+
+
+def median(values: List[float]) -> float:
+    values = [v for v in values if v and v > 0]
+    if not values:
+        return 0.0
+    return round(float(statistics.median(values)), 2)
+
+
+def ebay_access_token(status: Dict[str, Any]) -> Optional[str]:
+    client_id = os.getenv("EBAY_CLIENT_ID", "").strip()
+    client_secret = os.getenv("EBAY_CLIENT_SECRET", "").strip()
+
+    if not client_id or not client_secret:
+        status["ebay"] = {
+            "enabled": env_bool("ENABLE_EBAY", False),
+            "status": "missing_credentials",
+            "message": "Add EBAY_CLIENT_ID and EBAY_CLIENT_SECRET as GitHub Secrets."
+        }
         return None
 
-    buy_target, sale_target, target_spread = money_targets(price)
+    encoded = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    headers = {
+        "Authorization": f"Basic {encoded}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "grant_type": "client_credentials",
+        "scope": "https://api.ebay.com/oauth/api_scope",
+    }
+
+    try:
+        response = requests.post(EBAY_TOKEN_URL, headers=headers, data=data, timeout=25)
+        response.raise_for_status()
+        return response.json()["access_token"]
+    except Exception as error:
+        status["ebay"] = {
+            "enabled": True,
+            "status": "token_error",
+            "message": str(error),
+        }
+        return None
+
+
+def ebay_headers(token: str) -> Dict[str, str]:
+    return {
+        "Authorization": f"Bearer {token}",
+        "X-EBAY-C-MARKETPLACE-ID": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_US"),
+    }
+
+
+def ebay_item_price(item: Dict[str, Any]) -> float:
+    return safe_float((item.get("price") or {}).get("value", 0))
+
+
+def ebay_shipping_price(item: Dict[str, Any]) -> float:
+    shipping_options = item.get("shippingOptions") or []
+    if not shipping_options:
+        return 0.0
+    shipping_cost = shipping_options[0].get("shippingCost") or {}
+    return safe_float(shipping_cost.get("value", 0))
+
+
+def parse_ebay_active_item(item: Dict[str, Any], product: Dict[str, Any], checked_at: str) -> Dict[str, Any]:
+    price = ebay_item_price(item)
+    shipping = ebay_shipping_price(item)
+    total_price = round(price + shipping, 2)
+    seller = item.get("seller") or {}
+    image = item.get("image") or {}
 
     return {
-        "product_id": product_id,
-        "keyword": keyword,
-        "title": title,
+        "product_id": product["product_id"],
+        "product_name": product["product_name"],
+        "type": product["type"],
+        "era": product["era"],
+        "source": "eBay Active",
+        "item_id": item.get("itemId", ""),
+        "title": item.get("title", ""),
         "price": round(price, 2),
-        "buy_target": buy_target,
-        "sale_target": sale_target,
-        "estimated_spread": target_spread,
-        "url": url,
-        "image": image,
-        "source": "eBay API",
-        "type": product_type,
-        "condition": condition,
-        "seller": seller_username,
-        "seller_feedback_percentage": feedback_percentage,
-        "seller_feedback_score": feedback_score,
-        "item_id": item_id,
-        "last_checked": now,
+        "shipping": round(shipping, 2),
+        "total_price": total_price,
+        "currency": (item.get("price") or {}).get("currency", "USD"),
+        "image": image.get("imageUrl", ""),
+        "url": item.get("itemWebUrl", ""),
+        "condition": item.get("condition", ""),
+        "buying_options": item.get("buyingOptions", []),
+        "seller_username": seller.get("username", ""),
+        "seller_feedback_score": seller.get("feedbackScore", ""),
+        "seller_feedback_percentage": seller.get("feedbackPercentage", ""),
+        "item_location_country": (item.get("itemLocation") or {}).get("country", ""),
+        "last_checked": checked_at,
     }
 
 
-def load_csv(path, columns):
-    if not os.path.exists(path):
-        return pd.DataFrame(columns=columns)
+def fetch_ebay_active(product: Dict[str, Any], token: str, status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    limit = min(env_int("EBAY_RESULTS_PER_PRODUCT", int(product.get("max_results") or 20)), 200)
+    params = {
+        "q": product["keywords"],
+        "limit": limit,
+        "sort": os.getenv("EBAY_SORT", "newlyListed"),
+    }
+    if clean_string(product.get("ebay_category_id")):
+        params["category_ids"] = clean_string(product.get("ebay_category_id"))
+
     try:
-        return pd.read_csv(path)
+        response = requests.get(EBAY_BROWSE_SEARCH_URL, headers=ebay_headers(token), params=params, timeout=30)
+        response.raise_for_status()
+        raw_items = response.json().get("itemSummaries", [])
+        checked_at = now_utc()
+        listings = []
+        for item in raw_items:
+            title = item.get("title", "")
+            if not title_is_allowed(title, product.get("exclude_words", "")):
+                continue
+            parsed = parse_ebay_active_item(item, product, checked_at)
+            if parsed["total_price"] > 0:
+                listings.append(parsed)
+        return listings
     except Exception as error:
-        print(f"Could not read {path}: {error}")
-        return pd.DataFrame(columns=columns)
-
-
-def manual_deals(now):
-    manual = load_csv("manual_listings.csv", ["product_id", "title", "price", "url", "image", "source", "type"])
-    rows = []
-
-    for _, item in manual.iterrows():
-        price = safe_float(item.get("price", 0))
-        if price <= 0:
-            continue
-
-        buy_target, sale_target, target_spread = money_targets(price)
-
-        rows.append({
-            "product_id": clean_string(item.get("product_id", "manual")),
-            "keyword": clean_string(item.get("title", "")),
-            "title": clean_string(item.get("title", "")),
-            "price": round(price, 2),
-            "buy_target": buy_target,
-            "sale_target": sale_target,
-            "estimated_spread": target_spread,
-            "url": clean_string(item.get("url", "")),
-            "image": clean_string(item.get("image", "")),
-            "source": clean_string(item.get("source", "Manual")) or "Manual",
-            "type": clean_string(item.get("type", "manual")) or "manual",
-            "condition": "",
-            "seller": "",
-            "seller_feedback_percentage": "",
-            "seller_feedback_score": "",
-            "item_id": "",
-            "last_checked": now,
+        status.setdefault("ebay_active_errors", []).append({
+            "product_id": product["product_id"],
+            "message": str(error),
         })
-
-    return rows
-
-
-def retail_inventory(now):
-    retail = load_csv("retail_inventory.csv", ["product_id", "retailer", "title", "price", "url", "image", "stock_status", "store", "zip_code", "notes"])
-    rows = []
-    for _, item in retail.iterrows():
-        price = safe_float(item.get("price", 0))
-        buy_target, sale_target, target_spread = money_targets(price) if price > 0 else (0, 0, 0)
-        rows.append({
-            "product_id": clean_string(item.get("product_id", "")),
-            "retailer": clean_string(item.get("retailer", "")),
-            "title": clean_string(item.get("title", "")),
-            "price": round(price, 2),
-            "buy_target": buy_target,
-            "sale_target": sale_target,
-            "estimated_spread": target_spread,
-            "url": clean_string(item.get("url", "")),
-            "image": clean_string(item.get("image", "")),
-            "stock_status": clean_string(item.get("stock_status", "unknown")) or "unknown",
-            "store": clean_string(item.get("store", "")),
-            "zip_code": clean_string(item.get("zip_code", "")),
-            "notes": clean_string(item.get("notes", "")),
-            "last_checked": now,
-        })
-    return rows
+        return []
 
 
-def tiktok_videos():
-    videos = load_csv("tiktok_videos.csv", ["product_id", "tiktok_url", "label", "source"])
-    rows = []
-    for _, item in videos.iterrows():
-        url = clean_string(item.get("tiktok_url", ""))
-        if not url:
-            continue
-        rows.append({
-            "product_id": clean_string(item.get("product_id", "")),
-            "url": url,
-            "label": clean_string(item.get("label", "TikTok Video")),
-            "source": clean_string(item.get("source", "TikTok Manual")) or "TikTok Manual",
-        })
-    return rows
+def parse_ebay_sold_item(item: Dict[str, Any], product: Dict[str, Any], checked_at: str) -> Dict[str, Any]:
+    price = safe_float((item.get("price") or item.get("itemPrice") or {}).get("value", 0))
+    shipping = ebay_shipping_price(item)
+    image = item.get("image") or {}
+    seller = item.get("seller") or {}
+    sold_date = item.get("itemCreationDate") or item.get("lastSoldDate") or item.get("dateSold") or ""
 
-
-def update_history(deals, now):
-    history = load_json(HISTORY_FILE, [])
-    grouped = {}
-    for deal in deals:
-        product_id = deal.get("product_id", "")
-        price = safe_float(deal.get("price", 0))
-        if not product_id or price <= 0:
-            continue
-        grouped.setdefault(product_id, []).append(deal)
-
-    for product_id, product_deals in grouped.items():
-        prices = [safe_float(item.get("price", 0)) for item in product_deals if safe_float(item.get("price", 0)) > 0]
-        if not prices:
-            continue
-        history.append({
-            "product_id": product_id,
-            "keyword": clean_string(product_deals[0].get("keyword", product_deals[0].get("title", product_id))),
-            "timestamp": now,
-            "lowest_price": round(min(prices), 2),
-            "average_price": round(sum(prices) / len(prices), 2),
-            "listing_count": len(prices),
-        })
-
-    # Keep file from growing forever on GitHub Pages.
-    history = history[-1000:]
-    return history
-
-
-def main():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    watchlist = load_csv("watchlist.csv", ["product_id", "keyword", "type", "enabled"])
-    deals = []
-    ebay_status = {
-        "enabled": ENABLE_EBAY,
-        "marketplace": EBAY_MARKETPLACE_ID,
-        "results_per_product": EBAY_RESULTS_PER_PRODUCT,
-        "last_checked": now,
-        "errors": [],
-        "searched_keywords": [],
+    return {
+        "product_id": product["product_id"],
+        "product_name": product["product_name"],
+        "type": product["type"],
+        "era": product["era"],
+        "source": "eBay Sold",
+        "item_id": item.get("itemId", ""),
+        "title": item.get("title", ""),
+        "sold_price": round(price, 2),
+        "shipping": round(shipping, 2),
+        "total_sold_price": round(price + shipping, 2),
+        "currency": (item.get("price") or {}).get("currency", "USD"),
+        "image": image.get("imageUrl", ""),
+        "url": item.get("itemWebUrl", ""),
+        "condition": item.get("condition", ""),
+        "seller_username": seller.get("username", ""),
+        "sold_date": sold_date,
+        "last_checked": checked_at,
     }
 
-    # Keep manual items visible regardless of API state.
-    deals.extend(manual_deals(now))
 
-    if ENABLE_EBAY:
-        try:
-            token = get_ebay_token()
-            for _, product in watchlist.iterrows():
-                enabled = clean_string(product.get("enabled", "1"))
-                if enabled in ["0", "false", "False", "no", "No"]:
-                    continue
+def fetch_ebay_sold(product: Dict[str, Any], token: str, status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if not env_bool("ENABLE_EBAY_SOLD", False):
+        return []
 
-                keyword = clean_string(product.get("keyword", ""))
-                if not keyword:
-                    continue
+    limit = min(env_int("EBAY_SOLD_RESULTS_PER_PRODUCT", 20), 200)
+    params = {
+        "q": product["keywords"],
+        "limit": limit,
+    }
+    if clean_string(product.get("ebay_category_id")):
+        params["category_ids"] = clean_string(product.get("ebay_category_id"))
 
-                ebay_status["searched_keywords"].append(keyword)
-                try:
-                    listings = search_ebay(keyword, token)
-                    for listing in listings:
-                        parsed = parse_ebay_listing(product, listing, now)
-                        if parsed:
-                            deals.append(parsed)
-                except Exception as error:
-                    message = f"eBay search error for '{keyword}': {error}"
-                    print(message)
-                    ebay_status["errors"].append(message)
-        except Exception as error:
-            message = f"eBay auth error: {error}"
-            print(message)
-            ebay_status["errors"].append(message)
+    try:
+        response = requests.get(EBAY_SOLD_SEARCH_URL, headers=ebay_headers(token), params=params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        raw_items = data.get("itemSales") or data.get("itemSummaries") or []
+        checked_at = now_utc()
+        sold = []
+        for item in raw_items:
+            title = item.get("title", "")
+            if not title_is_allowed(title, product.get("exclude_words", "")):
+                continue
+            parsed = parse_ebay_sold_item(item, product, checked_at)
+            if parsed["total_sold_price"] > 0:
+                sold.append(parsed)
+        return sold
+    except Exception as error:
+        status.setdefault("ebay_sold_errors", []).append({
+            "product_id": product["product_id"],
+            "message": str(error),
+            "note": "Marketplace Insights is limited-release. Active listings still work if Browse API access is valid."
+        })
+        return []
 
-    # Sort by source then price for a cleaner dashboard.
-    deals = sorted(deals, key=lambda item: (item.get("product_id", ""), safe_float(item.get("price", 0))))
 
-    save_json(DEALS_FILE, deals)
-    save_json(HISTORY_FILE, update_history(deals, now))
-    save_json(RETAIL_FILE, retail_inventory(now))
-    save_json(TIKTOK_FILE, tiktok_videos())
-    save_json(EBAY_STATUS_FILE, ebay_status)
+def build_market_summary(product: Dict[str, Any], active: List[Dict[str, Any]], sold: List[Dict[str, Any]], checked_at: str) -> Dict[str, Any]:
+    active_prices = [item["total_price"] for item in active if item.get("product_id") == product["product_id"]]
+    sold_prices = [item["total_sold_price"] for item in sold if item.get("product_id") == product["product_id"]]
 
-    print(f"Saved {len(deals)} total deal rows.")
-    print(f"Saved retail inventory rows.")
-    print(f"eBay errors: {len(ebay_status['errors'])}")
+    median_sold = median(sold_prices)
+    median_active = median(active_prices)
+    market_value = median_sold or median_active
+    value_source = "sold_median" if median_sold else "active_median"
+
+    return {
+        "product_id": product["product_id"],
+        "product_name": product["product_name"],
+        "type": product["type"],
+        "era": product["era"],
+        "timestamp": checked_at,
+        "market_value": round(market_value, 2),
+        "market_value_source": value_source if market_value else "unavailable",
+        "buy_target": round(market_value * 0.80, 2) if market_value else 0,
+        "sale_target": round(market_value * 1.35, 2) if market_value else 0,
+        "lowest_active_price": round(min(active_prices), 2) if active_prices else 0,
+        "average_active_price": round(sum(active_prices) / len(active_prices), 2) if active_prices else 0,
+        "median_active_price": median_active,
+        "median_sold_price": median_sold,
+        "active_listing_count": len(active_prices),
+        "sold_comp_count": len(sold_prices),
+    }
+
+
+def grade_deal(total_price: float, market_value: float) -> str:
+    if total_price <= 0 or market_value <= 0:
+        return "No market value"
+    ratio = total_price / market_value
+    if ratio <= 0.70:
+        return "A+"
+    if ratio <= 0.80:
+        return "A"
+    if ratio <= 0.90:
+        return "B"
+    if ratio <= 1.00:
+        return "Watch"
+    return "Pass"
+
+
+def build_deals(active: List[Dict[str, Any]], summaries: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    deals = []
+    for item in active:
+        summary = summaries.get(item["product_id"], {})
+        market_value = safe_float(summary.get("market_value"))
+        buy_target = safe_float(summary.get("buy_target"))
+        sale_target = safe_float(summary.get("sale_target"))
+        total_price = safe_float(item.get("total_price"))
+        grade = grade_deal(total_price, market_value)
+        expected_profit = round(sale_target - total_price, 2) if sale_target else 0
+        discount_pct = round((1 - (total_price / market_value)) * 100, 1) if market_value else 0
+
+        lead = {
+            **item,
+            "market_value": market_value,
+            "market_value_source": summary.get("market_value_source", "unavailable"),
+            "buy_target": buy_target,
+            "sale_target": sale_target,
+            "expected_profit_at_sale_target": expected_profit,
+            "discount_to_market_pct": discount_pct,
+            "deal_grade": grade,
+        }
+        deals.append(lead)
+
+    grade_rank = {"A+": 0, "A": 1, "B": 2, "Watch": 3, "Pass": 4, "No market value": 5}
+    return sorted(deals, key=lambda x: (grade_rank.get(x.get("deal_grade"), 99), -safe_float(x.get("expected_profit_at_sale_target"))))
+
+
+def brave_search(query: str, count: int, status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    key = os.getenv("BRAVE_SEARCH_API_KEY", "").strip()
+    if not key:
+        status.setdefault("brave", {"status": "missing_credentials", "message": "Add BRAVE_SEARCH_API_KEY to enable source discovery."})
+        return []
+    headers = {
+        "Accept": "application/json",
+        "X-Subscription-Token": key,
+    }
+    params = {
+        "q": query,
+        "count": min(max(count, 1), 20),
+        "search_lang": "en",
+        "country": "US",
+        "safesearch": "moderate",
+    }
+    try:
+        response = requests.get(BRAVE_SEARCH_URL, headers=headers, params=params, timeout=25)
+        response.raise_for_status()
+        return (response.json().get("web") or {}).get("results") or []
+    except Exception as error:
+        status.setdefault("brave_errors", []).append({"query": query, "message": str(error)})
+        return []
+
+
+def build_retail_inventory(status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if not env_bool("ENABLE_RETAIL_SEARCH", False):
+        return []
+    watchlist = read_csv("retail_watchlist.csv")
+    results = []
+    checked_at = now_utc()
+    seen = set()
+    for _, row in watchlist.iterrows():
+        retailer = clean_string(row.get("retailer", "Retail"))
+        query = clean_string(row.get("query", ""))
+        max_results = int(safe_float(row.get("max_results", 8), 8))
+        if not query:
+            continue
+        for item in brave_search(query, max_results, status):
+            url = normalize_url(item.get("url", ""))
+            if not url or url in seen:
+                continue
+            seen.add(url)
+            text = f"{item.get('title', '')} {item.get('description', '')}"
+            lowered = text.lower()
+            if "out of stock" in lowered or "sold out" in lowered:
+                stock_status = "out_of_stock"
+            elif "preorder" in lowered or "pre-order" in lowered:
+                stock_status = "preorder"
+            elif "available" in lowered or "$" in lowered:
+                stock_status = "possible_available"
+            else:
+                stock_status = "source_check_required"
+            price = first_price_from_text(text)
+            results.append({
+                "retailer": retailer,
+                "title": item.get("title", ""),
+                "price": round(price, 2) if price else 0,
+                "buy_target": round(price * 0.80, 2) if price else 0,
+                "sale_target": round(price * 1.35, 2) if price else 0,
+                "url": url,
+                "description": item.get("description", ""),
+                "stock_status": stock_status,
+                "source": "Brave Search",
+                "last_checked": checked_at,
+            })
+    return results
+
+
+def discover_tiktok_videos(status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if not env_bool("ENABLE_TIKTOK_SEARCH", False):
+        return []
+    watchlist = read_csv("tiktok_watchlist.csv")
+    videos = []
+    seen = set()
+    checked_at = now_utc()
+    for _, row in watchlist.iterrows():
+        product_id = clean_string(row.get("product_id", ""))
+        query = clean_string(row.get("query", ""))
+        max_results = int(safe_float(row.get("max_results", 6), 6))
+        if not query:
+            continue
+        for result in brave_search(query, max_results, status):
+            url = normalize_url(result.get("url", ""))
+            if "tiktok.com" not in url or "/video/" not in url or url in seen:
+                continue
+            seen.add(url)
+            video = {
+                "product_id": product_id,
+                "source": "TikTok oEmbed",
+                "url": url,
+                "title": result.get("title", ""),
+                "description": result.get("description", ""),
+                "author_name": "",
+                "thumbnail_url": "",
+                "embed_html": "",
+                "last_checked": checked_at,
+            }
+            try:
+                response = requests.get(TIKTOK_OEMBED_URL, params={"url": url}, timeout=20)
+                response.raise_for_status()
+                data = response.json()
+                video.update({
+                    "title": data.get("title") or video["title"],
+                    "author_name": data.get("author_name", ""),
+                    "thumbnail_url": data.get("thumbnail_url", ""),
+                    "embed_html": data.get("html", ""),
+                })
+            except Exception as error:
+                video["oembed_error"] = str(error)
+            videos.append(video)
+            time.sleep(0.2)
+    return videos
+
+
+def main() -> None:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    status: Dict[str, Any] = {
+        "last_run": now_utc(),
+        "mode": "source_pull_only_no_manual_listings",
+    }
+
+    products_df = read_csv("watchlist.csv")
+    products = []
+    for _, row in products_df.iterrows():
+        products.append({
+            "product_id": clean_string(row.get("product_id", "")),
+            "product_name": clean_string(row.get("product_name", "")),
+            "type": clean_string(row.get("type", "single")),
+            "era": clean_string(row.get("era", "modern")),
+            "keywords": clean_string(row.get("keywords", "")),
+            "exclude_words": clean_string(row.get("exclude_words", "")),
+            "ebay_category_id": clean_string(row.get("ebay_category_id", "")),
+            "max_results": clean_string(row.get("max_results", "20")),
+        })
+    products = [p for p in products if p["product_id"] and p["keywords"]]
+
+    active_listings: List[Dict[str, Any]] = []
+    sold_records: List[Dict[str, Any]] = []
+
+    if env_bool("ENABLE_EBAY", False):
+        token = ebay_access_token(status)
+        if token:
+            for product in products:
+                active_listings.extend(fetch_ebay_active(product, token, status))
+                sold_records.extend(fetch_ebay_sold(product, token, status))
+            status["ebay"] = {
+                "enabled": True,
+                "status": "success" if active_listings or not status.get("ebay_active_errors") else "no_results_or_errors",
+                "active_listing_count": len(active_listings),
+                "sold_record_count": len(sold_records),
+                "sold_enabled": env_bool("ENABLE_EBAY_SOLD", False),
+            }
+    else:
+        status["ebay"] = {"enabled": False, "status": "disabled", "message": "Set ENABLE_EBAY=1 in GitHub Variables."}
+
+    checked_at = now_utc()
+    product_summaries = {}
+    new_active_history = []
+    for product in products:
+        summary = build_market_summary(product, active_listings, sold_records, checked_at)
+        product_summaries[product["product_id"]] = summary
+        new_active_history.append(summary)
+
+    old_active_history = load_json(FILES["active_history"], [])
+    active_history = (old_active_history + new_active_history)[-5000:]
+
+    old_sold_history = load_json(FILES["sold_history"], [])
+    existing_sold_keys = {f"{x.get('product_id')}::{x.get('item_id')}::{x.get('sold_date')}" for x in old_sold_history}
+    merged_sold = list(old_sold_history)
+    for record in sold_records:
+        key = f"{record.get('product_id')}::{record.get('item_id')}::{record.get('sold_date')}"
+        if key not in existing_sold_keys:
+            merged_sold.append(record)
+            existing_sold_keys.add(key)
+    merged_sold = merged_sold[-5000:]
+
+    deals = build_deals(active_listings, product_summaries)
+    retail = build_retail_inventory(status)
+    tiktok = discover_tiktok_videos(status)
+
+    status["outputs"] = {
+        "products_tracked": len(products),
+        "deals": len(deals),
+        "active_history_points_added": len(new_active_history),
+        "retail_results": len(retail),
+        "tiktok_videos": len(tiktok),
+    }
+
+    save_json(FILES["ebay_listings"], active_listings)
+    save_json(FILES["deals"], deals)
+    save_json(FILES["active_history"], active_history)
+    save_json(FILES["sold_history"], merged_sold)
+    save_json(FILES["retail"], retail)
+    save_json(FILES["tiktok"], tiktok)
+    save_json(FILES["status"], status)
+
+    print(json.dumps(status, indent=2))
 
 
 if __name__ == "__main__":

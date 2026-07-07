@@ -1,13 +1,7 @@
-product_id,keyword,type
-pbandai-29th,"ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",sealed
-zoro-op05-067,"Zoro-Juurou (SP) OP05-067",single
-op14-azure-box,"One Piece OP-14 The Azure Sea's Seven Booster Box",sealed
-op12-jp-box,"One Piece OP-12 Legacy of the Master Japanese Booster Box",sealed
-prb02-jp-box,"One Piece PRB-02 The Best Vol. 2 Japanese Booster Box",sealed
-learn-together-deck,"One Piece Learn Together Deck Set",sealed
-st20-katakuri,"One Piece ST20 Charlotte Katakuri Starter Deck",sealed
-st08-luffy,"One Piece ST08 Monkey D. Luffy Starter Deck",sealed
-st09-yamato,"One Piece ST09 Yamato Starter Deck",sealed
-live-action-premium,"One Piece Premium Card Collection Live Action Edition",sealed
-film-red-premium,"One Piece Premium Card Collection Film Red Edition",sealed
-leader-collection-premium,"One Piece Premium Card Collection Leader Collection",sealed
+product_id,product_name,type,era,keywords,exclude_words,ebay_category_id,max_results
+op01-romance-dawn-box,One Piece Romance Dawn OP-01 Booster Box,sealed,modern,"One Piece OP-01 Romance Dawn booster box sealed","empty box,case break,digital,proxy,custom,orica",183050,20
+op02-paramount-war-box,One Piece Paramount War OP-02 Booster Box,sealed,modern,"One Piece OP-02 Paramount War booster box sealed","empty box,digital,proxy,custom,orica",183050,20
+op05-manga-luffy,Monkey D. Luffy Manga OP05-119,single,modern,"One Piece OP05-119 Manga Luffy","proxy,custom,metal,orica,digital",183050,20
+c01-luffy-carddass,1999 One Piece Carddass Hyper Battle Luffy C01,single,vintage,"1999 One Piece Carddass Hyper Battle Luffy C01","proxy,custom,reprint,digital",183050,20
+jump-festa-2008-luffy,2008 Jump Festa Luffy Promo,single,vintage,"2008 Jump Festa Luffy promo One Piece card","proxy,custom,reprint,digital",183050,20
+premium-card-collection-29th,Premium Card Collection 29th Anniversary,sealed,modern,"ONE PIECE CARD GAME Premium Card Collection 29th Anniversary","opened,used,proxy,custom",183050,20
