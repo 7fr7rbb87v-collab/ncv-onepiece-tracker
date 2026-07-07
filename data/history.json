@@ -586,5 +586,137 @@
     "sale_target": 134.87,
     "estimated_spread": 54.95,
     "listing_count": 1
+  },
+  {
+    "product_id": "pbandai-29th",
+    "keyword": "ONE PIECE CARD GAME Premium Card Collection -29th Anniversary Edition-",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 10.0,
+    "average_price": 10.0,
+    "buy_target": 8.0,
+    "sale_target": 13.5,
+    "estimated_spread": 5.5,
+    "listing_count": 1
+  },
+  {
+    "product_id": "zoro-op05-067",
+    "keyword": "Zoro-Juurou (SP) OP05-067",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 660.0,
+    "average_price": 660.0,
+    "buy_target": 528.0,
+    "sale_target": 891.0,
+    "estimated_spread": 363.0,
+    "listing_count": 1
+  },
+  {
+    "product_id": "op14-azure-box",
+    "keyword": "One Piece OP-14 The Azure Sea's Seven Booster Box",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 299.99,
+    "average_price": 299.99,
+    "buy_target": 239.99,
+    "sale_target": 404.99,
+    "estimated_spread": 165.0,
+    "listing_count": 1
+  },
+  {
+    "product_id": "op12-jp-box",
+    "keyword": "One Piece OP-12 Legacy of the Master Japanese Booster Box",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 114.99,
+    "average_price": 114.99,
+    "buy_target": 91.99,
+    "sale_target": 155.24,
+    "estimated_spread": 63.25,
+    "listing_count": 1
+  },
+  {
+    "product_id": "prb02-jp-box",
+    "keyword": "One Piece PRB-02 The Best Vol. 2 Japanese Booster Box",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 93.99,
+    "average_price": 93.99,
+    "buy_target": 75.19,
+    "sale_target": 126.89,
+    "estimated_spread": 51.7,
+    "listing_count": 1
+  },
+  {
+    "product_id": "learn-together-deck",
+    "keyword": "One Piece Learn Together Deck Set",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 24.99,
+    "average_price": 24.99,
+    "buy_target": 19.99,
+    "sale_target": 33.74,
+    "estimated_spread": 13.75,
+    "listing_count": 1
+  },
+  {
+    "product_id": "st20-katakuri",
+    "keyword": "One Piece ST20 Charlotte Katakuri Starter Deck",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 5.25,
+    "average_price": 5.25,
+    "buy_target": 4.2,
+    "sale_target": 7.09,
+    "estimated_spread": 2.89,
+    "listing_count": 1
+  },
+  {
+    "product_id": "st08-luffy",
+    "keyword": "One Piece ST08 Monkey D. Luffy Starter Deck",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 14.99,
+    "average_price": 14.99,
+    "buy_target": 11.99,
+    "sale_target": 20.24,
+    "estimated_spread": 8.25,
+    "listing_count": 1
+  },
+  {
+    "product_id": "st09-yamato",
+    "keyword": "One Piece ST09 Yamato Starter Deck",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 15.0,
+    "average_price": 15.0,
+    "buy_target": 12.0,
+    "sale_target": 20.25,
+    "estimated_spread": 8.25,
+    "listing_count": 1
+  },
+  {
+    "product_id": "live-action-premium",
+    "keyword": "One Piece Premium Card Collection Live Action Edition",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 73.91,
+    "average_price": 73.91,
+    "buy_target": 59.13,
+    "sale_target": 99.78,
+    "estimated_spread": 40.65,
+    "listing_count": 1
+  },
+  {
+    "product_id": "film-red-premium",
+    "keyword": "One Piece Premium Card Collection Film Red Edition",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 199.95,
+    "average_price": 199.95,
+    "buy_target": 159.96,
+    "sale_target": 269.93,
+    "estimated_spread": 109.97,
+    "listing_count": 1
+  },
+  {
+    "product_id": "leader-collection-premium",
+    "keyword": "One Piece Premium Card Collection Leader Collection",
+    "timestamp": "2026-07-07 00:59:22 UTC",
+    "lowest_price": 99.9,
+    "average_price": 99.9,
+    "buy_target": 79.92,
+    "sale_target": 134.87,
+    "estimated_spread": 54.95,
+    "listing_count": 1
   }
 ]
