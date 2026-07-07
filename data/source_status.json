@@ -1,11 +1,11 @@
 {
-  "last_checked": "2026-07-07 02:26:10 UTC",
+  "last_checked": "2026-07-07 02:31:55 UTC",
   "ebay": {
     "enabled": true,
     "status": "missing_credentials",
     "marketplace_id": "EBAY_US",
     "watchlist_count": 6,
-    "last_checked": "2026-07-07 02:26:10 UTC",
+    "last_checked": "2026-07-07 02:31:55 UTC",
     "message": "Add EBAY_CLIENT_ID and EBAY_CLIENT_SECRET as GitHub Secrets."
   },
   "retail_search": {
