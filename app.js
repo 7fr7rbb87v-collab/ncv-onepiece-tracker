@@ -73,9 +73,10 @@ function renderDeals(deals) {
 
         <div class="price-line"><span>Listing Total</span><strong>$${formatNum(deal.listing_total || deal.price)}</strong></div>
         <div class="price-line"><span>Market Value</span><strong class="market-value">$${formatNum(deal.market_value)}</strong></div>
-        <div class="price-line"><span>Buy Target</span><strong>$${formatNum(deal.buy_target)}</strong></div>
+        <div class="price-line"><span>Offer Target -20%</span><strong>$${formatNum(deal.offer_target || deal.buy_target)}</strong></div>
+        <div class="price-line"><span>Max Buy vs Market</span><strong>$${formatNum(deal.market_buy_target)}</strong></div>
         <div class="price-line"><span>Sale Target</span><strong>$${formatNum(deal.sale_target)}</strong></div>
-        <div class="price-line"><span>Estimated Profit</span><strong class="${deal.is_buy_lead ? 'buy-lead' : ''}">$${formatNum(deal.estimated_profit)}</strong></div>
+        <div class="price-line"><span>Est. Spread to Sale</span><strong class="${deal.is_buy_lead ? 'buy-lead' : ''}">$${formatNum(deal.estimated_profit)}</strong></div>
 
         <div class="deal-actions">
           <button class="btn btn-secondary" onclick="showChart('${escapeAttr(productId)}', '${escapeAttr(productTitle)}')">View Chart</button>
