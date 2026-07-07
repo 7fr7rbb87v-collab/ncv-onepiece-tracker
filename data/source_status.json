@@ -1,16 +1,1 @@
-{
-  "last_run": "2026-07-07 02:22:34 UTC",
-  "mode": "source_pull_only_no_manual_listings",
-  "ebay": {
-    "enabled": true,
-    "status": "missing_credentials",
-    "message": "Add EBAY_CLIENT_ID and EBAY_CLIENT_SECRET as GitHub Secrets."
-  },
-  "outputs": {
-    "products_tracked": 6,
-    "deals": 0,
-    "active_history_points_added": 6,
-    "retail_results": 0,
-    "tiktok_videos": 0
-  }
-}
+{}
