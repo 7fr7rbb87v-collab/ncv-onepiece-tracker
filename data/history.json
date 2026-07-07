@@ -9,5 +9,16 @@
     "buy_target": 6000.79,
     "sale_target": 10126.34,
     "listing_count": 7
+  },
+  {
+    "product_id": "c01-luffy-carddass",
+    "product_name": "1999 One Piece Carddass Hyper Battle Luffy C01",
+    "timestamp": "2026-07-07 04:18:41 UTC",
+    "lowest_active_price": 2671.99,
+    "average_active_price": 21408.66,
+    "market_value": 7500.99,
+    "buy_target": 6000.79,
+    "sale_target": 10126.34,
+    "listing_count": 7
   }
 ]
