@@ -3859,5 +3859,170 @@
     "market_buy_target": 62.11,
     "sale_target": 104.81,
     "listing_count": 30
+  },
+  {
+    "product_id": "roger-op09-manga",
+    "product_name": "Gol D Roger Manga OP09",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 8.99,
+    "average_active_price": 13123.89,
+    "market_value": 9441.61,
+    "market_buy_target": 7553.29,
+    "sale_target": 12746.17,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op05-manga-luffy",
+    "product_name": "Monkey D. Luffy Manga OP05-119",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 17.8,
+    "average_active_price": 7792.89,
+    "market_value": 7250.0,
+    "market_buy_target": 5800.0,
+    "sale_target": 9787.5,
+    "listing_count": 27
+  },
+  {
+    "product_id": "shanks-op09-manga",
+    "product_name": "Shanks Manga OP09",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 17.8,
+    "average_active_price": 4786.66,
+    "market_value": 2137.07,
+    "market_buy_target": 1709.66,
+    "sale_target": 2885.04,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op06-wings-box",
+    "product_name": "One Piece OP-06 Wings of the Captain Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 16.08,
+    "average_active_price": 525.86,
+    "market_value": 400.0,
+    "market_buy_target": 320.0,
+    "sale_target": 540.0,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op09-emperors-box",
+    "product_name": "One Piece OP-09 Emperors in the New World Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 5.0,
+    "average_active_price": 344.64,
+    "market_value": 107.94,
+    "market_buy_target": 86.35,
+    "sale_target": 145.72,
+    "listing_count": 30
+  },
+  {
+    "product_id": "prb01-premium-box",
+    "product_name": "One Piece PRB-01 Premium Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 78.99,
+    "average_active_price": 1929.71,
+    "market_value": 1050.19,
+    "market_buy_target": 840.15,
+    "sale_target": 1417.76,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op01-romance-dawn-box",
+    "product_name": "One Piece Romance Dawn OP-01 Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 146.99,
+    "average_active_price": 2897.85,
+    "market_value": 1779.0,
+    "market_buy_target": 1423.2,
+    "sale_target": 2401.65,
+    "listing_count": 30
+  },
+  {
+    "product_id": "zoro-op05-067-sp",
+    "product_name": "Zoro-Juurou SP OP05-067",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 28.0,
+    "average_active_price": 346.18,
+    "market_value": 258.57,
+    "market_buy_target": 206.86,
+    "sale_target": 349.07,
+    "listing_count": 30
+  },
+  {
+    "product_id": "premium-card-collection-29th",
+    "product_name": "Premium Card Collection 29th Anniversary",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 60.0,
+    "average_active_price": 607.66,
+    "market_value": 542.0,
+    "market_buy_target": 433.6,
+    "sale_target": 731.7,
+    "listing_count": 9
+  },
+  {
+    "product_id": "op05-awakening-box",
+    "product_name": "One Piece OP-05 Awakening of the New Era Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 138.19,
+    "average_active_price": 981.14,
+    "market_value": 1092.48,
+    "market_buy_target": 873.98,
+    "sale_target": 1474.85,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op08-two-legends-box",
+    "product_name": "One Piece OP-08 Two Legends Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 40.53,
+    "average_active_price": 237.07,
+    "market_value": 121.01,
+    "market_buy_target": 96.81,
+    "sale_target": 163.36,
+    "listing_count": 30
+  },
+  {
+    "product_id": "c01-luffy-carddass",
+    "product_name": "1999 One Piece Carddass Hyper Battle Luffy C01",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 2253.05,
+    "average_active_price": 50996.01,
+    "market_value": 5949.99,
+    "market_buy_target": 4759.99,
+    "sale_target": 8032.49,
+    "listing_count": 30
+  },
+  {
+    "product_id": "op02-paramount-war-box",
+    "product_name": "One Piece Paramount War OP-02 Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 62.89,
+    "average_active_price": 270.77,
+    "market_value": 116.19,
+    "market_buy_target": 92.95,
+    "sale_target": 156.86,
+    "listing_count": 30
+  },
+  {
+    "product_id": "jump-festa-2008-luffy",
+    "product_name": "2008 Jump Festa Luffy Promo",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 32000.0,
+    "average_active_price": 41000.0,
+    "market_value": 41000.0,
+    "market_buy_target": 32800.0,
+    "sale_target": 55350.0,
+    "listing_count": 2
+  },
+  {
+    "product_id": "op07-500-years-box",
+    "product_name": "One Piece OP-07 500 Years in the Future Booster Box",
+    "timestamp": "2026-07-13 10:42:46 UTC",
+    "lowest_active_price": 64.99,
+    "average_active_price": 180.42,
+    "market_value": 77.64,
+    "market_buy_target": 62.11,
+    "sale_target": 104.81,
+    "listing_count": 30
   }
 ]
