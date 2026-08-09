@@ -1,12 +1,12 @@
 {
-  "last_checked": "2026-08-09 16:36:58 UTC",
+  "last_checked": "2026-08-09 17:32:32 UTC",
   "ebay": {
     "enabled": true,
     "status": "success",
     "marketplace_id": "EBAY_US",
     "watchlist_count": 15,
-    "last_checked": "2026-08-09 16:36:58 UTC",
-    "listings_found": 417,
+    "last_checked": "2026-08-09 17:32:32 UTC",
+    "listings_found": 418,
     "errors": []
   },
   "retail_search": {
